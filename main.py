@@ -1,5 +1,10 @@
 from src.MCTS import MCTS
 
-mcts = MCTS(3)
+mcts = MCTS(10)
 mcts.initialize()
-mcts.loop()
+
+count = 0
+while mcts.board.playing or count > 500:
+    mcts.loop()
+    print(mcts.board)
+    count += 1

@@ -1,14 +1,26 @@
+from math import sqrt
+
+
 class State():
-    def __init__(self, player, board, father, p):
+    def __init__(self, action, player, board, father_hash, p, c_puct=2):
+        self.action = action
         self.player = player
         self.board = board
-        self.father = father
+        self.father_hash = father_hash
         self.sons = list()
+        self.c_puct = c_puct
         self.p = p
-        self.w = 0
-        self.v = 0
-        self.q = 0
+        self.W = 0
+        self.U = 0
+        self.Q = 0
         self.n = 0
+        self.gain = self.U + self.Q
 
-    def set_sons(self, sons):
-        self.sons = sons
+    def __iter__(self):
+        yield self.gain
+
+    def update(self, v, n_others):
+        self.n += 1
+        self.W += v
+        self.U = self.c_puct * self.p * sqrt(n_others) / (self.n + 1)
+        self.Q = self.W / self.n
