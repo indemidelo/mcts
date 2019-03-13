@@ -12,69 +12,72 @@ class MCTS():
         self.c_puct = c_puct
         self.tau = tau
         self.board = Board()
-        self.current_state_hash = self.board.hash
         self.N = 0
-        self.nodes_to_eval = list()
         self.tree = dict()
 
     def initialize(self):
         self.p1 = Player(1)
         self.p2 = Player(2)
         self.active_player = self.p1
-        self.tree[self.current_state_hash] = State(
-            None, self.active_player, self.board, None, 1)
+        self.tree[self.board.hash] = State(
+            None, self.active_player, self.board, 1)
         self.nn = NeuralNetwork()
         self.board.playing = True
 
-    def loop(self):
+    def move(self):
         for j in range(self.n_iter):
-            leaf_hash = self.traverse_to_leaf()
+            leaf_hash, history = self.traverse_to_leaf()
             p, v = self.nn.eval(self.tree[leaf_hash])
-            self.expanse_leaf(leaf_hash, p)
-            self.backpropagation(leaf_hash, v)
+            self.expand_leaf(leaf_hash, p)
+            self.backpropagation(history, v)
             self.N += 1
         best_action = self.best_action()
         self.board.play_(self.active_player.name, best_action)
-        self.current_state_hash = self.board.hash
         self.log_something()
-        self.active_player = self.p1 \
-            if self.active_player == self.p2 else self.p2
+        self.active_player = self.opponent(self.active_player)
 
     def traverse_to_leaf(self):
-        leaf_hash = self.current_state_hash
+        leaf_hash = self.board.hash
+        history = []
         while self.tree[leaf_hash].sons:
+            brothers = self.tree[leaf_hash].sons
             leaf = max(
                 self.tree[leaf_hash].sons, key=lambda x: x.gain)
             leaf_hash = leaf.board.hash
-        return leaf_hash
+            history.append({'hash': leaf_hash, 'brothers': brothers})
+        return leaf_hash, history
 
-    def expanse_leaf(self, leaf_hash, p):
+    def expand_leaf(self, leaf_hash, p):
         leaf = self.tree[leaf_hash]
+        active_player = self.active_player \
+            if self.N == 0 else self.opponent(leaf.player)
         for action in leaf.board.list_available_moves():
             new_board = deepcopy(leaf.board)
-            new_board.play_(self.active_player.name, action)
-            new_state = State(action, self.active_player,
-                              new_board, leaf_hash, p[action])
+            new_board.play_(active_player.name, action)
+            new_state = State(action, active_player,
+                              new_board, p[action])
             leaf.sons.append(new_state)
-            self.tree[new_state.board.hash] = new_state
+            # if new_state.board.hash not in self.tree:
+            self.tree[new_board.hash] = new_state
 
-    def backpropagation(self, leaf_hash, v):
-        while leaf_hash != self.current_state_hash:
-            leaf = self.tree[leaf_hash]
-            father_hash = self.tree[leaf_hash].father_hash
-            brothers = self.tree[father_hash].sons
-            n_others = sum([b.n for b in brothers]) - leaf.n
-            leaf.update(v, n_others)
-            leaf_hash = father_hash
+    def backpropagation(self, history, v):
+        for action in history:
+            node = self.tree[action['hash']]
+            n_all = sum([b.n for b in action['brothers']])
+            node.update(v, n_all)
 
     def log_something(self):
         return
 
     def best_action(self):
-        current_state = self.tree[self.current_state_hash]
+        current_state = self.tree[self.board.hash]
         pi = [s.n ** (1 / self.tau) for s in current_state.sons]
-        pi = [p / sum(pi) for p in pi]
+        pi = [p / sum(pi) if sum(pi) else p for p in pi]
         actions = [s.action for s in current_state.sons]
         r = random.choices(actions, pi)[0]
-        print(r)
         return r
+
+    def opponent(self, player):
+        if player is None:
+            return self.p1
+        return self.p1 if player == self.p2 else self.p2
