@@ -2,39 +2,74 @@ import random
 from copy import deepcopy
 from src.Board import Board
 from src.State import State
-from src.Player import Player
 from src.NeuralNetwork import NeuralNetwork
 
 
-class MCTS():
-    def __init__(self, n_iter, c_puct=2, tau=1):
+class SimulatedGame():
+    def __init__(self, player_one, player_two, neural_network,
+                 n_iter, n_moves, c_puct=2, tau=1):
+        self.player_one = player_one
+        self.player_two = player_two
+        self.nn = neural_network
         self.n_iter = n_iter
+        self.n_moves = n_moves
         self.c_puct = c_puct
         self.tau = tau
         self.board = Board()
         self.N = 0
         self.tree = dict()
+        self.saved_states = {
+            'state': list(), 'pi': list(), 'z': list()}
 
     def initialize(self):
-        self.p1 = Player(1)
-        self.p2 = Player(2)
-        self.active_player = self.p1
+        self.active_player, self.opponent = self.players_order()
         self.tree[self.board.hash] = State(
             None, self.active_player, self.board, 1)
-        self.nn = NeuralNetwork()
         self.board.playing = True
+
+    def players_order(self):
+        return random.sample(
+            (self.player_one, self.player_two), k=2)
+
+    def play_a_game(self):
+        while self.board.playing:
+            self.move()
+        self.log_results()
+        return self.export_data_for_training()
+
+    def log_results(self):
+        for j, state in enumerate(self.saved_states['state']):
+            self.saved_states['z'] = 1 \
+                if self.board.winner == state.player else - 1
+
+    def export_data_for_training(self):
+        n_states = len(self.saved_states['states'])
+        indices = random.sample(range(n_states), n_states)
+        raw_data = {'input': list(), 'pi': list(), 'v': list()}
+        for j, ind in enumerate(indices):
+            state = self.saved_states['state'][ind]
+            player = state.player.name
+            raw_data['input'][j] = state.board.board_as_tensor(player)
+            raw_data['pi'][j] = list(self.saved_states['pi'][ind].values())
+            raw_data['output_v'][j] = self.saved_states['z'][ind]
+        return raw_data
+
+    def switch_players_(self):
+        self.active_player, self.opponent = \
+            self.opponent, self.active_player
 
     def move(self):
         for j in range(self.n_iter):
             leaf_hash, history = self.traverse_to_leaf()
             p, v = self.nn.eval(self.tree[leaf_hash])
-            self.expand_leaf(leaf_hash, p)
+            if self.tree[leaf_hash].board.playing:
+                self.expand_leaf(leaf_hash, p)
             self.backpropagation(history, v)
             self.N += 1
-        best_action = self.best_action()
-        self.board.play_(self.active_player.name, best_action)
-        self.log_something()
-        self.active_player = self.opponent(self.active_player)
+        action, pi = self.play()
+        self.log_something(pi)
+        self.board.play_(self.active_player.name, action)
+        self.switch_players_()
 
     def traverse_to_leaf(self):
         leaf_hash = self.board.hash
@@ -49,36 +84,40 @@ class MCTS():
 
     def expand_leaf(self, leaf_hash, p):
         leaf = self.tree[leaf_hash]
-        active_player = self.active_player \
-            if self.N == 0 else self.opponent(leaf.player)
+        active_player = self.find_opponent(leaf.player)
         for action in leaf.board.list_available_moves():
             new_board = deepcopy(leaf.board)
             new_board.play_(active_player.name, action)
-            new_state = State(action, active_player,
-                              new_board, p[action])
+            new_state = State(
+                action, active_player, new_board, p[action])
             leaf.sons.append(new_state)
-            # if new_state.board.hash not in self.tree:
             self.tree[new_board.hash] = new_state
 
     def backpropagation(self, history, v):
         for action in history:
-            node = self.tree[action['hash']]
+            state = self.tree[action['hash']]
             n_all = sum([b.n for b in action['brothers']])
-            node.update(v, n_all)
+            state.update(v, n_all)
 
-    def log_something(self):
-        return
+    def log_something(self, pi):
+        self.saved_states['state'].append(self.tree[self.board.hash])
+        self.saved_states['pi'].append(pi)
 
-    def best_action(self):
+    def play(self):
         current_state = self.tree[self.board.hash]
-        pi = [s.n ** (1 / self.tau) for s in current_state.sons]
-        pi = [p / sum(pi) if sum(pi) else p for p in pi]
-        actions = [s.action for s in current_state.sons]
-        if sum(pi) == 0: pi = [1 / len(pi)] * len(pi)
-        r = random.choices(actions, weights=pi, k=1)[0]
-        return r
+        pi = {k: 0.0 for k in range(7)}  # todo change here to generalize over games
+        for s in current_state.sons:
+            pi[s.action] = s.n ** (1 / self.tau)
+        pi = {k: p / sum(pi) if sum(pi) else p for k, p in pi.items()}
+        if sum(pi.values()) == 0.0:
+            pi = {k: 1 / len(pi) for k in pi.keys()}
+        move = random.choices(
+            list(pi.keys()), list(pi.values()), k=1)[0]
+        return move, pi
 
-    def opponent(self, player):
-        if player is None:
-            return self.p1
-        return self.p1 if player == self.p2 else self.p2
+    def find_opponent(self, player):
+        if self.N == 0:
+            return self.active_player
+        playerbase = [self.active_player, self.opponent]
+        playerbase.remove(player)
+        return playerbase[0]
