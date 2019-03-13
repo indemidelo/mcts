@@ -18,7 +18,6 @@ class Training():
         for g in range(self.n_games):
             simgame = SimulatedGame(
                 self.p1, self.p2, self.nn, self.n_iter, self.n_moves)
-            simgame.initialize()
             training_raw_data = simgame.play_a_game()
             input_data, output_data = self.prepare_data(training_raw_data)
             self.nn.train(input_data, output_data, self.n_epochs)
@@ -30,4 +29,3 @@ class Training():
         output_data_pi = np.asarray(raw_data['output_pi'])
         output_data_z = np.asarray(raw_data['output_z'])
         return input_data, (output_data_pi, output_data_z)
-

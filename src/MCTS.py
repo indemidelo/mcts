@@ -2,29 +2,26 @@ import random
 from copy import deepcopy
 from src.Board import Board
 from src.State import State
-from src.NeuralNetwork import NeuralNetwork
 
 
 class SimulatedGame():
     def __init__(self, player_one, player_two, neural_network,
-                 n_iter, n_moves, c_puct=2, tau=1):
+                 n_iter, n_moves, logger, c_puct=2, tau=1):
         self.player_one = player_one
         self.player_two = player_two
         self.nn = neural_network
         self.n_iter = n_iter
+        self.logger = logger
         self.n_moves = n_moves
         self.c_puct = c_puct
         self.tau = tau
-        self.board = Board()
-        self.N = 0
-        self.tree = dict()
-        self.saved_states = {
-            'state': list(), 'pi': list(), 'z': list()}
 
     def initialize(self):
+        self.N = 0
+        self.board = Board()
         self.active_player, self.opponent = self.players_order()
-        self.tree[self.board.hash] = State(
-            None, self.active_player, self.board, 1)
+        self.tree = {self.board.hash: State(
+            None, self.active_player, self.board, 1)}
         self.board.playing = True
 
     def players_order(self):
@@ -32,27 +29,12 @@ class SimulatedGame():
             (self.player_one, self.player_two), k=2)
 
     def play_a_game(self):
+        self.initialize()
         while self.board.playing:
             self.move()
-        self.log_results()
-        return self.export_data_for_training()
-
-    def log_results(self):
-        for j, state in enumerate(self.saved_states['state']):
-            self.saved_states['z'] = 1 \
-                if self.board.winner == state.player else - 1
-
-    def export_data_for_training(self):
-        n_states = len(self.saved_states['states'])
-        indices = random.sample(range(n_states), n_states)
-        raw_data = {'input': list(), 'pi': list(), 'v': list()}
-        for j, ind in enumerate(indices):
-            state = self.saved_states['state'][ind]
-            player = state.player.name
-            raw_data['input'][j] = state.board.board_as_tensor(player)
-            raw_data['pi'][j] = list(self.saved_states['pi'][ind].values())
-            raw_data['output_v'][j] = self.saved_states['z'][ind]
-        return raw_data
+        training_data = self.logger.export_data_for_training(
+            self.board, self.n_moves)
+        return training_data
 
     def switch_players_(self):
         self.active_player, self.opponent = \
@@ -67,7 +49,7 @@ class SimulatedGame():
             self.backpropagation(history, v)
             self.N += 1
         action, pi = self.play()
-        self.log_something(pi)
+        self.logger.log_single_game(self.tree[self.board.hash], pi)
         self.board.play_(self.active_player.name, action)
         self.switch_players_()
 
@@ -84,7 +66,7 @@ class SimulatedGame():
 
     def expand_leaf(self, leaf_hash, p):
         leaf = self.tree[leaf_hash]
-        active_player = self.find_opponent(leaf.player)
+        active_player = self.whos_opponent(leaf.player)
         for action in leaf.board.list_available_moves():
             new_board = deepcopy(leaf.board)
             new_board.play_(active_player.name, action)
@@ -99,10 +81,6 @@ class SimulatedGame():
             n_all = sum([b.n for b in action['brothers']])
             state.update(v, n_all)
 
-    def log_something(self, pi):
-        self.saved_states['state'].append(self.tree[self.board.hash])
-        self.saved_states['pi'].append(pi)
-
     def play(self):
         current_state = self.tree[self.board.hash]
         pi = {k: 0.0 for k in range(7)}  # todo change here to generalize over games
@@ -115,7 +93,7 @@ class SimulatedGame():
             list(pi.keys()), list(pi.values()), k=1)[0]
         return move, pi
 
-    def find_opponent(self, player):
+    def whos_opponent(self, player):
         if self.N == 0:
             return self.active_player
         playerbase = [self.active_player, self.opponent]
