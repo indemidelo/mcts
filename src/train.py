@@ -1,12 +1,12 @@
-import tensorflow as tf
 import numpy as np
 from src.MCTS import SimulatedGame
 from src.Player import Player
+from src.NeuralNetwork import NeuralNetwork
 
 
 class Training():
-    def __init__(self, network, n_iter, n_moves, n_games, n_epochs, checkpoint=20):
-        self.nn = network
+    def __init__(self, n_games, n_iter, n_moves, n_epochs, checkpoint=20):
+        self.nn = NeuralNetwork()
         self.n_iter = n_iter
         self.n_moves = n_moves
         self.n_games = n_games
@@ -17,15 +17,15 @@ class Training():
     def play_and_train(self):
         for g in range(self.n_games):
             simgame = SimulatedGame(
-                self.p1, self.p2, self.nn, self.n_iter, self.n_moves)
+                self.p1, self.p2, self.n_iter, self.n_moves)
             training_raw_data = simgame.play_a_game()
             input_data, output_data = self.prepare_data(training_raw_data)
             self.nn.train(input_data, output_data, self.n_epochs)
-            if g + 1 % self.checkpoint == 0:
-                self.nn.save()
+            if (g + 1) % self.checkpoint == 0:
+                self.nn.save(g + 1)
 
     def prepare_data(self, raw_data):
-        input_data = np.asarray(raw_data['input'])
-        output_data_pi = np.asarray(raw_data['output_pi'])
-        output_data_z = np.asarray(raw_data['output_z'])
+        input_data = raw_data['input']
+        output_data_pi = np.asarray(raw_data['pi'])
+        output_data_z = np.asarray(raw_data['z'])
         return input_data, (output_data_pi, output_data_z)

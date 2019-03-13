@@ -2,16 +2,18 @@ import random
 from copy import deepcopy
 from src.Board import Board
 from src.State import State
+from src.Logger import Logger
+from src.NeuralNetwork import NeuralNetwork
 
 
 class SimulatedGame():
-    def __init__(self, player_one, player_two, neural_network,
-                 n_iter, n_moves, logger, c_puct=2, tau=1):
+    def __init__(self, player_one, player_two,
+                 n_iter, n_moves, c_puct=2, tau=1):
         self.player_one = player_one
         self.player_two = player_two
-        self.nn = neural_network
+        self.nn = NeuralNetwork()
         self.n_iter = n_iter
-        self.logger = logger
+        self.logger = Logger()
         self.n_moves = n_moves
         self.c_puct = c_puct
         self.tau = tau

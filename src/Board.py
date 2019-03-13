@@ -1,5 +1,3 @@
-# import torch
-import random
 import numpy as np
 
 
@@ -32,9 +30,9 @@ class Board():
         for j in self.board:
             print(' |', end=' ')
             for i in j:
-                value = f'{bcolors.OKBLUE}O {bcolors.ENDC}' if i == 1 else f'{bcolors.RED}X {bcolors.ENDC}' \
+                value = f'{bcolors.OKBLUE}O {bcolors.ENDC}' \
+                    if i == 1 else f'{bcolors.RED}X {bcolors.ENDC}' \
                     if i == 2 else f'{bcolors.GRAY}_ {bcolors.ENDC}'
-                # value = f'{i} ' if i != 0 else '_ '
                 print(f'{value}|', end=' ')
             print()
         print('---1---2---3---4---5---6---7---')
@@ -184,12 +182,8 @@ class Board():
 
     def board_as_tensor(self, player):
         p1board, p2board = self.input_data_board()
-        if player == 1:
-            player_matrix = np.ones((6, 7))
-            # return torch.tensor((p1board, player_matrix)).reshape(-1, 2, 6, 7)
-            # return torch.tensor((p1board, player_matrix)).reshape(1, 2, 6, 7)
-            return np.array((p1board, player_matrix)).reshape((1, 6, 7, 2))
-        else:
-            player_matrix = np.zeros((6, 7))
-            # return torch.tensor((p2board, player_matrix)).reshape(1, 2, 6, 7)
-            return np.array((p2board, player_matrix)).reshape((1, 6, 7, 2))
+        player_matrix = np.zeros((6, 7))
+        if player == 1: player_matrix += 1
+        game_matrix = np.array(
+            (p1board, p2board, player_matrix))
+        return game_matrix.reshape((1, 6, 7, 3))

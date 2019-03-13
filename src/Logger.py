@@ -1,7 +1,8 @@
+from src.singleton import Singleton
 import random
 
 
-class Logger():
+class Logger(metaclass=Singleton):
     def __init__(self):
         self.saved_states = {'state': list(), 'pi': list(), 'z': list()}
 
@@ -11,7 +12,7 @@ class Logger():
 
     def log_results(self, board):
         for j, state in enumerate(self.saved_states['state']):
-            result = 1 if board.winner == state.player else - 1
+            result = 1 if board.winner == state.player.name else - 1
             self.saved_states['z'].append(result)
 
     def export_data_for_training(self, board, n_moves):
