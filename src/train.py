@@ -19,13 +19,13 @@ class Training():
             simgame = SimulatedGame(
                 self.p1, self.p2, self.n_iter, self.n_moves)
             training_raw_data = simgame.play_a_game()
-            input_data, output_data = self.prepare_data(training_raw_data)
-            self.nn.train(input_data, output_data, self.n_epochs)
+            training_data = self.prepare_data(training_raw_data)
+            self.nn.train(*training_data, self.n_epochs)
             if (g + 1) % self.checkpoint == 0:
                 self.nn.save(g + 1)
 
     def prepare_data(self, raw_data):
-        input_data = raw_data['input']
-        output_data_pi = np.asarray(raw_data['pi'])
-        output_data_z = np.asarray(raw_data['z'])
-        return input_data, (output_data_pi, output_data_z)
+        input_data = np.array(raw_data['input']).reshape((-1, 6, 7, 3))
+        output_data_pi = np.array(raw_data['pi'])
+        output_data_z = np.array(raw_data['z']).reshape((-1, 1))
+        return input_data, output_data_pi, output_data_z

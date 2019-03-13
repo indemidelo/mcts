@@ -75,7 +75,7 @@ def AlphaGo19Net(inputs, pi, z, beta, n_res_blocks, learning_rate):
     # Convolutional layer #3
     conv3 = tf.layers.conv2d(
         inputs=tower,
-        filters=2,
+        filters=3,
         kernel_size=[1, 1],
         padding='same',
         strides=1,
@@ -89,7 +89,7 @@ def AlphaGo19Net(inputs, pi, z, beta, n_res_blocks, learning_rate):
     relu4 = tf.nn.relu(batchnorm4)
 
     # Fully connected layer
-    with tf.name_scope('Policy Head'):
+    with tf.name_scope('PolicyHead'):
         relu4 = tf.reshape(relu4, [-1, 6 * 7 * 3])
         pred_policy = tf.layers.dense(
             inputs=relu4,
@@ -107,7 +107,7 @@ def AlphaGo19Net(inputs, pi, z, beta, n_res_blocks, learning_rate):
     )
     batchnorm5 = tf.layers.batch_normalization(conv4)
     relu5 = tf.nn.relu(batchnorm5)
-    relu5_reshaped = tf.reshape(relu5, [-1, 6 * 7 * 3])
+    relu5_reshaped = tf.reshape(relu5, [-1, 6 * 7 * 1])
     fc2 = tf.layers.dense(
         inputs=relu5_reshaped,
         units=256,
@@ -126,16 +126,23 @@ def AlphaGo19Net(inputs, pi, z, beta, n_res_blocks, learning_rate):
 
     # Loss
     with tf.name_scope('Loss'):
-        loss_value = tf.losses.mean_squared_error(labels=z, predictions=pred_value)
-        loss_policy = tf.matmul(pi, tf.log(pred_policy), transpose_b=True)
+        # loss_value = tf.losses.mean_squared_error(labels=z, predictions=pred_value)
+        loss_value = tf.reshape(tf.squared_difference(z, pred_value), (-1, ))
+        # loss_policy = tf.reduce_mean(tf.matmul(pi, tf.log(pred_policy), transpose_b=True))
+        loss_policy = tf.reduce_sum(tf.multiply(pi, pred_policy), axis=1)
         regularization = beta * tf.reduce_sum(regularization_losses)
-        loss = loss_value + loss_policy + regularization
+        # loss = loss_value - loss_policy + regularization
+        # loss = loss_value
+        loss = tf.reduce_mean(loss_value - loss_policy) + regularization
+
+    # todo add momentum = 0.9
 
     # Configure optimizer
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
 
     # Accuracy
     # with tf.name_scope('Accuracy'):
+    # todo fix this accuracy
     acc_policy = tf.reduce_mean(pred_policy - pi)
     acc_value = tf.reduce_mean(pred_value - z)
 

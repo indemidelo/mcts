@@ -5,10 +5,10 @@ from src.network import AlphaGo19Net
 
 class NeuralNetwork(metaclass=Singleton):
     def __init__(self):
-        self.beta = 0.5
-        self.n_res_blocks = 19
+        self.beta = 1e-4
+        self.n_res_blocks = 1
         self.learning_rate = 0.001
-        pass
+        self.initialize()
 
     def initialize(self):
         self.inputs = tf.placeholder(tf.float32, [None, 6, 7, 3], name='InputData')
@@ -22,17 +22,25 @@ class NeuralNetwork(metaclass=Singleton):
         self.sess = tf.Session()
         self.sess.run(tf.global_variables_initializer())
 
-    def eval(self, state):
-        p = {0: 0.1, 1: 0.2, 2: 0.3, 3: 0.35, 4: 0.05, 5: 0.0, 6: 0.1}
-        v = 0.6
-        return p, v
+    def eval(self, board):
+        p, v = self.sess.run([self.pred_policy, self.pred_value],
+            feed_dict={self.inputs: board})
+        return p[0], v[0][0]
 
-    def train(self, *args):
-        feed_dict = {}
-        _, c, acc_policy, acc_value = self.sess.run(
-            [self.optimizer, self.loss,
-             self.acc_policy, self.acc_value],
-            feed_dict=feed_dict)
+    def train(self, input_data, pi_output, z_output, n_epochs):
+        feed_dict = {
+            self.inputs: input_data,
+            self.pi: pi_output,
+            self.z: z_output}
+        for epoch in range(n_epochs):
+            _, c, acc_policy, acc_value = self.sess.run(
+                [self.optimizer, self.loss,
+                 self.acc_policy, self.acc_value],
+                feed_dict=feed_dict)
+            # if (epoch + 1) % 25:
+            print(f"Epoch: {epoch + 1} - cost= {c}\n"
+                  f"accuracy policy: {acc_policy} - "
+                  f"accuracy value: {acc_value}")
 
     def save(self, iter):
         print(f'Saving at iter {iter}')

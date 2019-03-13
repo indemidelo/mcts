@@ -45,8 +45,11 @@ class SimulatedGame():
     def move(self):
         for j in range(self.n_iter):
             leaf_hash, history = self.traverse_to_leaf()
-            p, v = self.nn.eval(self.tree[leaf_hash])
-            if self.tree[leaf_hash].board.playing:
+            leaf = self.tree[leaf_hash]
+            board_as_tensor = leaf.board.board_as_tensor(
+                self.whos_opponent(leaf.player).name)
+            p, v = self.nn.eval(board_as_tensor)
+            if leaf.board.playing:
                 self.expand_leaf(leaf_hash, p)
             self.backpropagation(history, v)
             self.N += 1
