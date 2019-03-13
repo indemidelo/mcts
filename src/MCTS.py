@@ -74,7 +74,8 @@ class MCTS():
         pi = [s.n ** (1 / self.tau) for s in current_state.sons]
         pi = [p / sum(pi) if sum(pi) else p for p in pi]
         actions = [s.action for s in current_state.sons]
-        r = random.choices(actions, pi)[0]
+        if sum(pi) == 0: pi = [1 / len(pi)] * len(pi)
+        r = random.choices(actions, weights=pi, k=1)[0]
         return r
 
     def opponent(self, player):
