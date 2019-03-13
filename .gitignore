@@ -2,3 +2,5 @@
 \.idea/dictionaries/
 
 \.idea/
+
+src/__pycache__/
