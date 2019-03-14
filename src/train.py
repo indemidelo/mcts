@@ -16,8 +16,10 @@ class Training():
 
     def play_and_train(self):
         for g in range(self.n_games):
+            tau = 0.99 ** g
             simgame = SimulatedGame(
-                self.p1, self.p2, self.n_iter, self.n_moves)
+                self.p1, self.p2, self.n_iter,
+                self.n_moves, tau=tau)
             training_raw_data = simgame.play_a_game()
             training_data = self.prepare_data(training_raw_data)
             self.nn.train(*training_data, self.n_epochs)

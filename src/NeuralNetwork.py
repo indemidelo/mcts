@@ -6,7 +6,7 @@ from src.network import AlphaGo19Net
 class NeuralNetwork(metaclass=Singleton):
     def __init__(self):
         self.beta = 1e-4
-        self.n_res_blocks = 1
+        self.n_res_blocks = 19
         self.learning_rate = 0.001
         self.initialize()
 
@@ -37,10 +37,9 @@ class NeuralNetwork(metaclass=Singleton):
                 [self.optimizer, self.loss,
                  self.acc_policy, self.acc_value],
                 feed_dict=feed_dict)
-            # if (epoch + 1) % 25:
             print(f"Epoch: {epoch + 1} - cost= {c}\n"
                   f"accuracy policy: {acc_policy} - "
                   f"accuracy value: {acc_value}")
 
     def save(self, iter):
-        print(f'Saving at iter {iter}')
+        self.saver.save(self.sess, f'models/my_little_model_iter_{iter}')

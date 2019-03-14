@@ -26,6 +26,7 @@ class Logger(metaclass=Singleton):
             player = state.player.name
             raw_data['input'].append(state.board.board_as_tensor(player))
             raw_data['pi'].append(list(self.saved_states['pi'][ind].values()))
+            print(raw_data['pi'][-1])
             raw_data['z'].append(self.saved_states['z'][ind])
         self.saved_states = {'state': list(), 'pi': list(), 'z': list()}
         return raw_data

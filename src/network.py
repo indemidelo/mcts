@@ -71,33 +71,31 @@ def AlphaGo19Net(inputs, pi, z, beta, n_res_blocks, learning_rate):
     tower = ResidualTower(relu2, regularizer, n_res_blocks)
 
     ### Policy head
-
     # Convolutional layer #3
     conv3 = tf.layers.conv2d(
         inputs=tower,
-        filters=3,
+        filters=2,
         kernel_size=[1, 1],
         padding='same',
         strides=1,
         kernel_regularizer=regularizer
     )
-
     # Batch normalization layer #4
     batchnorm4 = tf.layers.batch_normalization(conv3)
-
     # ReLU layer #4
     relu4 = tf.nn.relu(batchnorm4)
-
-    # Fully connected layer
+    # Fully connected layer #1
     with tf.name_scope('PolicyHead'):
-        relu4 = tf.reshape(relu4, [-1, 6 * 7 * 3])
+        relu4 = tf.reshape(relu4, [-1, 6 * 7 * 2])
         pred_policy = tf.layers.dense(
             inputs=relu4,
             units=7,
-            kernel_regularizer=regularizer
+            kernel_regularizer=regularizer,
+            activation=tf.contrib.layers.softmax
         )
 
     ### Value Head
+    # Convolutional layer #4
     conv4 = tf.layers.conv2d(
         inputs=tower,
         filters=1,
@@ -105,20 +103,26 @@ def AlphaGo19Net(inputs, pi, z, beta, n_res_blocks, learning_rate):
         strides=1,
         kernel_regularizer=regularizer
     )
+    # Batch normalization #5
     batchnorm5 = tf.layers.batch_normalization(conv4)
+    # ReLU #5
     relu5 = tf.nn.relu(batchnorm5)
+    # Fully connected layer #2
     relu5_reshaped = tf.reshape(relu5, [-1, 6 * 7 * 1])
     fc2 = tf.layers.dense(
         inputs=relu5_reshaped,
         units=256,
         kernel_regularizer=regularizer
     )
+    # ReLU #6
     relu6 = tf.nn.relu(fc2)
+    # Fully connected layer #3
     fc_output = tf.layers.dense(
         inputs=relu6,
         units=1,
         kernel_regularizer=regularizer
     )
+    # Tanh activator
     pred_value = tf.nn.tanh(fc_output)
 
     # Collect all regularization losses
@@ -126,14 +130,13 @@ def AlphaGo19Net(inputs, pi, z, beta, n_res_blocks, learning_rate):
 
     # Loss
     with tf.name_scope('Loss'):
-        # loss_value = tf.losses.mean_squared_error(labels=z, predictions=pred_value)
-        loss_value = tf.reshape(tf.squared_difference(z, pred_value), (-1, ))
-        # loss_policy = tf.reduce_mean(tf.matmul(pi, tf.log(pred_policy), transpose_b=True))
-        loss_policy = tf.reduce_sum(tf.multiply(pi, pred_policy), axis=1)
+        loss_value = tf.reshape(tf.squared_difference(z, pred_value), (-1,))
+        loss_policy = tf.reduce_sum(
+            tf.multiply(pi, tf.math.log(1e-6 + pred_policy)), axis=1)
+        # loss_policy = tf.reduce_sum(tf.multiply(pi, tf.math.log(pred_policy)), axis=1)
         regularization = beta * tf.reduce_sum(regularization_losses)
-        # loss = loss_value - loss_policy + regularization
-        # loss = loss_value
-        loss = tf.reduce_mean(loss_value - loss_policy) + regularization
+        loss = tf.reduce_sum(loss_value - loss_policy) + regularization
+        # loss = tf.reduce_sum(loss_value) + regularization
 
     # todo add momentum = 0.9
 
@@ -146,9 +149,6 @@ def AlphaGo19Net(inputs, pi, z, beta, n_res_blocks, learning_rate):
     acc_policy = tf.reduce_mean(pred_policy - pi)
     acc_value = tf.reduce_mean(pred_value - z)
 
-    # train_op = optimizer.minimize(
-    #     loss=loss,
-    #     global_step=tf.train.global_step()
-    # )
+    # mean_pred_policy = tf.reduce_mean(pred_policy)
 
-    return pred_policy, pred_value, loss, optimizer, acc_policy, acc_value
+    return pred_policy, pred_value, loss, optimizer, acc_policy, acc_value # , mean_pred_policy
