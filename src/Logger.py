@@ -12,7 +12,6 @@ class Logger(metaclass=Singleton):
         print(f'pi: {pi}')
         print(f'Active player: {state.player.name} '
               f'- action: {state.action}')
-        print(f'state: {state.board}')
 
     def log_results(self, board):
         for j, state in enumerate(self.saved_states['state']):

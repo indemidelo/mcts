@@ -24,8 +24,7 @@ class SimulatedGame():
         self.N = 0
         self.board = Board()
         self.active_player, self.opponent = self.players_order()
-        self.tree = {self.board.hash: State(
-            None, self.active_player, self.board, 1)}
+        self.tree = State(None, self.active_player, self.board, 1)
         self.board.playing = True
 
     def players_order(self):
@@ -45,40 +44,37 @@ class SimulatedGame():
             self.opponent, self.active_player
 
     def move(self):
-        somma_mov = 0
+        # somma_mov = 0
         for j in range(self.n_iter):
-            leaf_hash, history = self.traverse_to_leaf()
-            leaf = self.tree[leaf_hash]
+            leaf, history = self.traverse_to_leaf()
             board_as_tensor = leaf.board.board_as_tensor(
                 self.whos_opponent(leaf.player).name)
             p, v = self.nn.eval(board_as_tensor)
             if leaf.board.playing:
-                self.expand_leaf(leaf_hash, p)
+                self.expand_leaf(leaf, p)
             self.backpropagation(history, v)
-            somma_temp = sum([s.n for s in self.tree[self.board.hash].sons])
-            if somma_temp == somma_mov:
-                print('qualcosa non va')
+            somma_temp = sum([s.n for s in self.tree.sons])
+            # if self.N and somma_temp == somma_mov:
+            #     print('qualcosa non va')
             self.N += 1
-            somma_mov = somma_temp
+            # somma_mov = somma_temp
         print('leaf board:', leaf.board)
         action, pi = self.play()
-        self.logger.log_single_game(self.tree[self.board.hash], pi)
+        self.logger.log_single_game(self.tree, pi)
         self.board.play_(self.active_player.name, action)
         self.switch_players_()
+        self.tree = self.tree.sons[action]
 
     def traverse_to_leaf(self):
-        leaf_hash = self.board.hash
+        leaf = self.tree
         history = []
-        while self.tree[leaf_hash].sons:
-            bro_hash = [s.board.hash for s in self.tree[leaf_hash].sons]
-            leaf = max(
-                self.tree[leaf_hash].sons, key=lambda x: x.gain)
-            leaf_hash = leaf.board.hash
-            history.append({'hash': leaf_hash, 'brothers': bro_hash})
-        return leaf_hash, history
+        while leaf.sons:
+            brothers = leaf.sons
+            leaf = max(leaf.sons, key=lambda x: x.gain)
+            history.append({'leaf': leaf, 'brothers': brothers})
+        return leaf, history
 
-    def expand_leaf(self, leaf_hash, p):
-        leaf = self.tree[leaf_hash]
+    def expand_leaf(self, leaf, p):
         active_player = self.whos_opponent(leaf.player)
         for action in leaf.board.list_available_moves():
             new_board = deepcopy(leaf.board)
@@ -86,22 +82,17 @@ class SimulatedGame():
             new_state = State(
                 action, active_player, new_board, p[action])
             leaf.sons.append(new_state)
-            if new_board.hash not in self.tree:
-                self.tree[new_board.hash] = new_state
-            else:
-                self.tree[new_board.hash].p = p[action]
 
     def backpropagation(self, history, v):
         for action in history:
-            state = self.tree[action['hash']]
-            n_all = sum([self.tree[b].n for b in action['brothers']])
-            state.update(v, n_all)
+            n_all = 1 + sum([b.n for b in action['brothers']])
+            action['leaf'].update(v, n_all)
 
     def play(self):
-        current_state = self.tree[self.board.hash]
+        # current_state = self.tree
         pi = {k: 0.0 for k in range(7)}  # todo change here to generalize over games
         noise = iter(np.random.dirichlet([0.03] * 7, 1)[0])
-        for s in current_state.sons:
+        for s in self.tree.sons:
             prob = s.n ** (1 / self.tau)
             # pi[s.action] = (1 - self.eps) * prob + self.eps * next(noise)
             pi[s.action] = prob
