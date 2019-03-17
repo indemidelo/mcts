@@ -45,6 +45,7 @@ class SimulatedGame():
             self.opponent, self.active_player
 
     def move(self):
+        somma_mov = 0
         for j in range(self.n_iter):
             leaf_hash, history = self.traverse_to_leaf()
             leaf = self.tree[leaf_hash]
@@ -54,7 +55,12 @@ class SimulatedGame():
             if leaf.board.playing:
                 self.expand_leaf(leaf_hash, p)
             self.backpropagation(history, v)
+            somma_temp = sum([s.n for s in self.tree[self.board.hash].sons])
+            if somma_temp == somma_mov:
+                print('qualcosa non va')
             self.N += 1
+            somma_mov = somma_temp
+        print('leaf board:', leaf.board)
         action, pi = self.play()
         self.logger.log_single_game(self.tree[self.board.hash], pi)
         self.board.play_(self.active_player.name, action)
@@ -64,11 +70,11 @@ class SimulatedGame():
         leaf_hash = self.board.hash
         history = []
         while self.tree[leaf_hash].sons:
-            brothers = self.tree[leaf_hash].sons
+            bro_hash = [s.board.hash for s in self.tree[leaf_hash].sons]
             leaf = max(
                 self.tree[leaf_hash].sons, key=lambda x: x.gain)
             leaf_hash = leaf.board.hash
-            history.append({'hash': leaf_hash, 'brothers': brothers})
+            history.append({'hash': leaf_hash, 'brothers': bro_hash})
         return leaf_hash, history
 
     def expand_leaf(self, leaf_hash, p):
@@ -80,12 +86,15 @@ class SimulatedGame():
             new_state = State(
                 action, active_player, new_board, p[action])
             leaf.sons.append(new_state)
-            self.tree[new_board.hash] = new_state
+            if new_board.hash not in self.tree:
+                self.tree[new_board.hash] = new_state
+            else:
+                self.tree[new_board.hash].p = p[action]
 
     def backpropagation(self, history, v):
         for action in history:
             state = self.tree[action['hash']]
-            n_all = sum([b.n for b in action['brothers']])
+            n_all = sum([self.tree[b].n for b in action['brothers']])
             state.update(v, n_all)
 
     def play(self):
@@ -96,13 +105,8 @@ class SimulatedGame():
             prob = s.n ** (1 / self.tau)
             # pi[s.action] = (1 - self.eps) * prob + self.eps * next(noise)
             pi[s.action] = prob
-        # todo please fix this atrocity
-        pi = {k: p / sum(pi.values()) if sum(pi.values()) \
-            else p for k, p in pi.items()}
-        if sum(pi.values()) == 0.0:
-            pi = {k: 1 / len(pi) for k in pi.keys()}
-        move = random.choices(
-            list(pi.keys()), list(pi.values()), k=1)[0]
+        pi = {k: p / sum(pi.values()) for k, p in pi.items()}
+        move = random.choices(*zip(*pi.items()), k=1)[0]
         return move, pi
 
     def whos_opponent(self, player):

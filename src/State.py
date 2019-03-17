@@ -14,6 +14,9 @@ class State():
         self.Q = float('inf')
         self.n = 0
 
+    def __str__(self):
+        return str(f'a: {self.action} - n: {self.n}')
+
     @property
     def gain(self):
         return self.Q + self.U

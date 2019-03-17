@@ -25,6 +25,19 @@ class Training():
             self.nn.train(*training_data, self.n_epochs)
             if (g + 1) % self.checkpoint == 0:
                 self.nn.save(g + 1)
+    
+    def test(self):
+        from src.Board import Board
+        from src.tfPlayer import tfPlayer
+        from src.NNGame import NNRecordedGame
+        b = Board()
+        p1 = tfPlayer(1, b, self.nn.sess, self.nn.pred_policy, 
+                      self.nn.inputs, training=False)
+        p2 = tfPlayer(2, b, self.nn.sess, self.nn.pred_policy, 
+                      self.nn.inputs, training=False)
+        nn_g = NNRecordedGame(b, p1, p2, 1)
+        nn_g.initialize()
+        nn_g.play_a_game(print_board=True)
 
     def prepare_data(self, raw_data):
         input_data = np.array(raw_data['input']).reshape((-1, 6, 7, 3))
