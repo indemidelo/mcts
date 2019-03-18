@@ -58,7 +58,7 @@ class SimulatedGame():
             #     print('qualcosa non va')
             self.N += 1
             # somma_mov = somma_temp
-        print('leaf board:', leaf.board)
+        # print('leaf board:', leaf.board)
         next_state, pi = self.play()
         self.logger.log_single_game(self.tree, pi)
         self.board.play_(self.active_player.name, next_state.action)

@@ -6,7 +6,7 @@ from src.NeuralNetwork import NeuralNetwork
 
 class Training():
     def __init__(self, n_games, n_iter, n_moves,
-                 n_epochs, batch_size, checkpoint=20):
+                 n_epochs, batch_size, checkpoint=100):
         self.nn = NeuralNetwork()
         self.n_iter = n_iter
         self.n_moves = n_moves
@@ -24,7 +24,7 @@ class Training():
                 self.n_moves, tau=tau)
             training_raw_data = simgame.play_a_game()
             training_data = self.prepare_data(training_raw_data)
-            self.nn.train(training_data, self.n_epochs)
+            self.nn.train(*training_data, self.n_epochs)
             if (g + 1) % self.checkpoint == 0:
                 self.nn.save(g + 1)
     
@@ -45,7 +45,7 @@ class Training():
         input_data = self.create_batches(np.array(raw_data['input']).reshape((-1, 6, 7, 3)))
         output_data_pi = self.create_batches(np.array(raw_data['pi']))
         output_data_z = self.create_batches(np.array(raw_data['z']).reshape((-1, 1)))
-        return zip(input_data, output_data_pi, output_data_z)
+        return input_data, output_data_pi, output_data_z
 
     def create_batches(self, data):
         batches = []

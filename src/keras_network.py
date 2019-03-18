@@ -115,10 +115,11 @@ def AlphaGo19Net(inputs, pi, z, beta, n_res_blocks, learning_rate):
 
     ### Loss
     with tf.name_scope('Loss'):
-        loss_value = tf.reshape(
-            tf.squared_difference(z, pred_value), (-1,))
-        loss_policy = tf.reduce_sum(
-            tf.multiply(pi, tf.math.log(1e-6 + pred_policy)), axis=1)
+        loss_value = tf.reshape(tf.squared_difference(z, pred_value), (-1,))
+        # loss_value = tf.losses.mean_squared_error(z, pred_value)
+        loss_policy = tf.reduce_sum(tf.multiply(pi, tf.math.log(1e-6 + pred_policy)), axis=1)
+        # loss_policy = tf.nn.softmax_cross_entropy_with_logits_v2(labels=pi, logits=fc1)
+        # loss_policy = tf.reduce_sum(tf.multiply(pi, tf.math.log(pred_policy)), axis=1)
         regularization = beta * tf.reduce_sum(regularization_losses)
         loss = tf.reduce_sum(loss_value - loss_policy) + regularization
 
