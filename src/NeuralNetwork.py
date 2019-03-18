@@ -27,10 +27,10 @@ class NeuralNetwork(metaclass=Singleton):
                              feed_dict={self.inputs: board})
         return p[0], v[0][0]
 
-    def train(self, input_batches, pi_batches, z_batches, n_epochs):
+    def train(self, zip_data, n_epochs):
         for epoch in range(n_epochs):
             acc_policy_mean, acc_value_mean, loss_mean, j = 0, 0, 0, 0
-            for i, pi, z in zip(input_batches, pi_batches, z_batches):
+            for i, pi, z in zip_data:
                 feed_dict = {self.inputs: i, self.pi: pi, self.z: z}
                 _, c, acc_policy, acc_value = self.sess.run(
                     [self.optimizer, self.loss, self.acc_policy,
