@@ -5,12 +5,14 @@ from src.NeuralNetwork import NeuralNetwork
 
 
 class Training():
-    def __init__(self, n_games, n_iter, n_moves, n_epochs, checkpoint=20):
+    def __init__(self, n_games, n_iter, n_moves,
+                 n_epochs, batch_size, checkpoint=20):
         self.nn = NeuralNetwork()
         self.n_iter = n_iter
         self.n_moves = n_moves
         self.n_games = n_games
         self.n_epochs = n_epochs
+        self.batch_size = batch_size
         self.checkpoint = checkpoint
         self.p1, self.p2 = Player(1), Player(2)
 
@@ -40,7 +42,13 @@ class Training():
         nn_g.play_a_game(print_board=True)
 
     def prepare_data(self, raw_data):
-        input_data = np.array(raw_data['input']).reshape((-1, 6, 7, 3))
-        output_data_pi = np.array(raw_data['pi'])
-        output_data_z = np.array(raw_data['z']).reshape((-1, 1))
+        input_data = self.create_batches(np.array(raw_data['input']).reshape((-1, 6, 7, 3)))
+        output_data_pi = self.create_batches(np.array(raw_data['pi']))
+        output_data_z = self.create_batches(np.array(raw_data['z']).reshape((-1, 1)))
         return input_data, output_data_pi, output_data_z
+
+    def create_batches(self, data):
+        batches = []
+        for j in range(0, len(data), self.batch_size):
+            batches.append(data[j: j + self.batch_size])
+        return batches

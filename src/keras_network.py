@@ -125,14 +125,16 @@ def AlphaGo19Net(inputs, pi, z, beta, n_res_blocks, learning_rate):
     # todo add momentum = 0.9
 
     # Configure optimizer
-    optimizer = keras.optimizers.SGD(
+    optimizer = tf.train.GradientDescentOptimizer(
         learning_rate=learning_rate).minimize(loss)
 
     # Accuracy
     # with tf.name_scope('Accuracy'):
     # todo fix this accuracy
-    acc_policy = tf.reduce_mean(pred_policy - pi)
-    acc_value = tf.reduce_mean(pred_value - z)
+    # acc_policy = tf.reduce_mean(pred_policy - pi)
+    # acc_value = tf.reduce_mean(pred_value - z)
+    acc_policy = tf.reduce_sum(loss_policy)
+    acc_value = tf.reduce_sum(loss_value)
 
     # mean_pred_policy = tf.reduce_mean(pred_policy)
 

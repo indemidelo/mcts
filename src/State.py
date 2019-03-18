@@ -6,7 +6,7 @@ class State():
         self.action = action
         self.player = player
         self.board = board
-        self.sons = list()
+        self.children = list()
         self.c_puct = c_puct
         self.p = p
         self.W = 0
