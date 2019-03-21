@@ -44,21 +44,15 @@ class SimulatedGame():
             self.opponent, self.active_player
 
     def move(self):
-        # somma_mov = 0
         for j in range(self.n_iter):
             leaf, history = self.traverse_to_leaf()
             board_as_tensor = leaf.board.board_as_tensor(
                 self.whos_opponent(leaf.player).name)
             p, v = self.nn.eval(board_as_tensor)
             if leaf.board.playing:
-                self.expand_leaf(leaf, p)
-            self.backpropagation(history, v)
-            # somma_temp = sum([s.n for s in self.tree.children])
-            # if self.N and somma_temp == somma_mov:
-            #     print('qualcosa non va')
+                self.expand_leaf_(leaf, p)
+            self.backpropagation_(history, v)
             self.N += 1
-            # somma_mov = somma_temp
-        # print('leaf board:', leaf.board)
         next_state, pi = self.play()
         self.logger.log_single_game(self.tree, pi)
         self.board.play_(self.active_player.name, next_state.action)
@@ -69,12 +63,11 @@ class SimulatedGame():
         leaf = self.tree
         history = []
         while leaf.children:
-            brothers = leaf.children
             leaf = max(leaf.children, key=lambda x: x.gain)
-            history.append({'leaf': leaf, 'brothers': brothers})
+            history.append({'leaf': leaf, 'brothers': leaf.children})
         return leaf, history
 
-    def expand_leaf(self, leaf, p):
+    def expand_leaf_(self, leaf, p):
         active_player = self.whos_opponent(leaf.player)
         for action in leaf.board.list_available_moves():
             new_board = deepcopy(leaf.board)
@@ -83,7 +76,7 @@ class SimulatedGame():
                 action, active_player, new_board, p[action])
             leaf.children.append(new_state)
 
-    def backpropagation(self, history, v):
+    def backpropagation_(self, history, v):
         for action in history:
             n_all = 1 + sum([b.n for b in action['brothers']])
             action['leaf'].update(v, n_all)
@@ -95,6 +88,7 @@ class SimulatedGame():
             prob = s.n ** (1 / self.tau)
             # pi[s.action] = (1 - self.eps) * prob + self.eps * next(noise)
             pi[s.action] = prob
+            print('play', s)
         pi = {k: v / sum(pi.values()) for k, v in pi.items()}
         action = random.choices(*zip(*pi.items()), k=1)[0]
         next_state = next((x for x in self.tree.children if x.action == action))
@@ -103,6 +97,12 @@ class SimulatedGame():
     def whos_opponent(self, player):
         if self.N == 0:
             return self.active_player
-        playerbase = [self.active_player, self.opponent]
-        playerbase.remove(player)
-        return playerbase[0]
+        return self.opponent if player == self.active_player \
+            else self.active_player
+
+    def explode(self, root, depth):
+        if root.children:
+            for c in root.children:
+                if c.n:
+                    print(f'{"-" * depth}{c.n}')
+                self.explode(c, depth + 1)

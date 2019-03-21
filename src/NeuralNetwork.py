@@ -6,7 +6,7 @@ from src.keras_network import AlphaGo19Net
 class NeuralNetwork(metaclass=Singleton):
     def __init__(self):
         self.beta = 1e-4
-        self.n_res_blocks = 19
+        self.n_res_blocks = 5
         self.learning_rate = 0.001
         self.initialize()
 
