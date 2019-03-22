@@ -16,7 +16,7 @@ class Training():
         self.checkpoint = checkpoint
         self.p1, self.p2 = Player(1), Player(2)
 
-    def play_and_train(self):
+    def train(self):
         for g in range(self.n_games):
             tau = 0.99 ** g
             simgame = SimulatedGame(

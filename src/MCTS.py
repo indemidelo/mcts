@@ -32,6 +32,7 @@ class SimulatedGame():
         self.initialize()
         while self.tree.board.playing:
             self.move()
+            print(self.tree.board)
         training_data = self.logger.export_data_for_training(
             self.tree.board.winner, self.n_moves)
         return training_data
