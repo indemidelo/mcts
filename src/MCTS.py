@@ -69,11 +69,14 @@ class SimulatedGame():
 
     def expand_leaf_(self, leaf, p):
         opponent = self.whos_opponent(leaf.player)
-        for action in leaf.board.list_available_moves():
+        available_moves = leaf.board.list_available_moves()
+        noise = iter(np.random.dirichlet(
+            [self.dir_noise] * len(available_moves)))
+        for action in available_moves:
             new_board = deepcopy(leaf.board)
             new_board.play_(leaf.player.name, action)
             new_state = State(
-                action, opponent, new_board, p[action])
+                action, opponent, new_board, p[action] + next(noise))
             leaf.children.append(new_state)
 
     def backpropagation_(self, history, v):
@@ -83,10 +86,11 @@ class SimulatedGame():
 
     def play(self):
         pi = {k: 0.0 for k in range(7)}  # todo change here to generalize over games
-        noise = iter(np.random.dirichlet([self.dir_noise] * len(self.tree.children)))
+        # noise = iter(np.random.dirichlet([self.dir_noise] * len(self.tree.children)))
         for s in self.tree.children:
             prob = s.n ** (1 / self.tau)
-            pi[s.action] = (1 - self.eps) * prob + self.eps * next(noise)
+            # pi[s.action] = (1 - self.eps) * prob + self.eps * next(noise)
+            pi[s.action] = prob
         pi = {k: v / sum(pi.values()) for k, v in pi.items()}
         action = random.choices(*zip(*pi.items()), k=1)[0]
         next_state = next((x for x in self.tree.children if x.action == action))
