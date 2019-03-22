@@ -1,4 +1,5 @@
 import random
+import numpy as np
 from copy import deepcopy
 from src.Board import Board
 from src.State import State
@@ -8,7 +9,8 @@ from src.NeuralNetwork import NeuralNetwork
 
 class SimulatedGame():
     def __init__(self, player_one, player_two,
-                 n_iter, n_moves, c_puct=2, tau=1, eps=0.25):
+                 n_iter, n_moves, c_puct=2, tau=1, eps=0.25,
+                 dir_noise=0.03):
         self.player_one = player_one
         self.player_two = player_two
         self.nn = NeuralNetwork()
@@ -18,6 +20,7 @@ class SimulatedGame():
         self.c_puct = c_puct
         self.tau = tau
         self.eps = eps
+        self.dir_noise = dir_noise
 
     def initialize(self):
         self.N = 0
@@ -80,12 +83,10 @@ class SimulatedGame():
 
     def play(self):
         pi = {k: 0.0 for k in range(7)}  # todo change here to generalize over games
-        # noise = iter(np.random.dirichlet([0.03] * 7, 1)[0])
+        noise = iter(np.random.dirichlet([self.dir_noise] * len(self.tree.children)))
         for s in self.tree.children:
             prob = s.n ** (1 / self.tau)
-            # pi[s.action] = (1 - self.eps) * prob + self.eps * next(noise)
-            pi[s.action] = prob
-            # print('play', s)
+            pi[s.action] = (1 - self.eps) * prob + self.eps * next(noise)
         pi = {k: v / sum(pi.values()) for k, v in pi.items()}
         action = random.choices(*zip(*pi.items()), k=1)[0]
         next_state = next((x for x in self.tree.children if x.action == action))
