@@ -75,8 +75,8 @@ class SimulatedGame():
         for action in available_moves:
             new_board = deepcopy(leaf.board)
             new_board.play_(leaf.player.name, action)
-            new_state = State(
-                action, opponent, new_board, p[action] + next(noise))
+            prior = (1 - self.eps) * p[action] + self.eps * next(noise)
+            new_state = State(action, opponent, new_board, prior)
             leaf.children.append(new_state)
 
     def backpropagation_(self, history, v):
