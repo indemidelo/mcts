@@ -4,10 +4,11 @@ from src.keras_network import AlphaGo19Net
 
 
 class NeuralNetwork(metaclass=Singleton):
-    def __init__(self):
-        self.beta = 1e-4
-        self.n_res_blocks = 5
-        self.learning_rate = 0.001
+    def __init__(self, beta=1e-4, n_res_blocks=19, learning_rate=0.001, momentum=0.9):
+        self.beta = beta
+        self.n_res_blocks = n_res_blocks
+        self.learning_rate = learning_rate
+        self.momentum = momentum
         self.initialize()
 
     def initialize(self):
@@ -17,7 +18,8 @@ class NeuralNetwork(metaclass=Singleton):
         self.pred_policy, self.pred_value, self.loss, self.optimizer, \
         self.acc_policy, self.acc_value = AlphaGo19Net(
             self.inputs, self.pi, self.z, self.beta,
-            self.n_res_blocks, self.learning_rate)
+            self.n_res_blocks, self.learning_rate,
+            self.momentum)
         self.saver = tf.train.Saver()
         self.sess = tf.Session()
         self.sess.run(tf.global_variables_initializer())

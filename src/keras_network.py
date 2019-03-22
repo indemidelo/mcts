@@ -39,7 +39,8 @@ def ResidualTower(input, regularizer, n_blocks):
     return res
 
 
-def AlphaGo19Net(inputs, pi, z, beta, n_res_blocks, learning_rate):
+def AlphaGo19Net(inputs, pi, z, beta, n_res_blocks, learning_rate,
+                 momentum):
     # Regularizer
     regularizer = keras.regularizers.l2(0.1)
 
@@ -124,19 +125,17 @@ def AlphaGo19Net(inputs, pi, z, beta, n_res_blocks, learning_rate):
         regularization = beta * tf.reduce_sum(regularization_losses)
         loss = .01 * loss_value - .99 * loss_policy + regularization
 
-    # todo add momentum = 0.9
-
     # Configure optimizer
-    optimizer = tf.train.GradientDescentOptimizer(
-        learning_rate=learning_rate).minimize(loss)
+    optimizer = tf.train.MomentumOptimizer(
+        learning_rate=learning_rate, momentum=momentum).minimize(loss)
 
     # Accuracy
     # with tf.name_scope('Accuracy'):
     # todo fix this accuracy
     # acc_policy = tf.reduce_mean(pred_policy - pi)
     # acc_value = tf.reduce_mean(pred_value - z)
-    acc_policy = tf.reduce_sum(loss_policy)
-    acc_value = tf.reduce_sum(loss_value)
+    acc_policy = loss_policy
+    acc_value = loss_value
 
     # mean_pred_policy = tf.reduce_mean(pred_policy)
 

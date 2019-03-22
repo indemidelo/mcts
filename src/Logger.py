@@ -6,7 +6,7 @@ class Logger(metaclass=Singleton):
     def __init__(self):
         self.saved_states = {'state': list(), 'pi': list(), 'z': list()}
 
-    def log_single_game(self, state, pi):
+    def log_single_move(self, state, pi):
         self.saved_states['state'].append(state)
         self.saved_states['pi'].append(pi)
         print(f'pi: {pi}')
@@ -15,13 +15,18 @@ class Logger(metaclass=Singleton):
         # print(f'Board:')
         # print(f'{state.board}')
 
-    def log_results(self, board):
-        for j, state in enumerate(self.saved_states['state']):
-            result = 1 if board.winner == state.player.name else - 1
+    def log_results(self, winner):
+        for state in self.saved_states['state']:
+            if winner is None:
+                result = 0
+            elif winner == state.player.name:
+                result = 1
+            else:
+                result = -1
             self.saved_states['z'].append(result)
 
-    def export_data_for_training(self, board, n_moves):
-        self.log_results(board)
+    def export_data_for_training(self, winner, n_moves):
+        self.log_results(winner)
         n_states = len(self.saved_states['state'])
         indices = random.sample(
             range(n_states), min(n_states, n_moves))

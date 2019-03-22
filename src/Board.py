@@ -17,7 +17,7 @@ class bcolors:
 class Board():
     def __init__(self, rows=6, columns=7):
         self.board = np.zeros((rows, columns), dtype=float)
-        self.playing = False
+        self.playing = True
         self.plays = 0
         self.full = False
         self.winner = None

@@ -1,5 +1,4 @@
 import random
-import numpy as np
 from copy import deepcopy
 from src.Board import Board
 from src.State import State
@@ -22,10 +21,8 @@ class SimulatedGame():
 
     def initialize(self):
         self.N = 0
-        self.board = Board()
         self.active_player, self.opponent = self.players_order()
-        self.tree = State(None, self.active_player, self.board, 1)
-        self.board.playing = True
+        self.tree = State(None, self.active_player, Board(), 1)
 
     def players_order(self):
         return random.sample(
@@ -33,10 +30,10 @@ class SimulatedGame():
 
     def play_a_game(self):
         self.initialize()
-        while self.board.playing:
+        while self.tree.board.playing:
             self.move()
         training_data = self.logger.export_data_for_training(
-            self.board, self.n_moves)
+            self.tree.board.winner, self.n_moves)
         return training_data
 
     def switch_players_(self):
@@ -54,8 +51,7 @@ class SimulatedGame():
             self.backpropagation_(history, v)
             self.N += 1
         next_state, pi = self.play()
-        self.logger.log_single_game(self.tree, pi)
-        self.board.play_(self.active_player.name, next_state.action)
+        self.logger.log_single_move(self.tree, pi)
         self.switch_players_()
         self.tree = next_state
 
@@ -68,12 +64,12 @@ class SimulatedGame():
         return leaf, history
 
     def expand_leaf_(self, leaf, p):
-        active_player = self.whos_opponent(leaf.player)
+        opponent = self.whos_opponent(leaf.player)
         for action in leaf.board.list_available_moves():
             new_board = deepcopy(leaf.board)
-            new_board.play_(active_player.name, action)
+            new_board.play_(leaf.player.name, action)
             new_state = State(
-                action, active_player, new_board, p[action])
+                action, opponent, new_board, p[action])
             leaf.children.append(new_state)
 
     def backpropagation_(self, history, v):
@@ -88,17 +84,17 @@ class SimulatedGame():
             prob = s.n ** (1 / self.tau)
             # pi[s.action] = (1 - self.eps) * prob + self.eps * next(noise)
             pi[s.action] = prob
-            print('play', s)
+            # print('play', s)
         pi = {k: v / sum(pi.values()) for k, v in pi.items()}
         action = random.choices(*zip(*pi.items()), k=1)[0]
         next_state = next((x for x in self.tree.children if x.action == action))
         return next_state, pi
 
     def whos_opponent(self, player):
-        if self.N == 0:
+        if player == self.active_player:
+            return self.opponent
+        else:
             return self.active_player
-        return self.opponent if player == self.active_player \
-            else self.active_player
 
     def explode(self, root, depth):
         if root.children:
