@@ -179,7 +179,11 @@ class Board():
     def board_as_tensor(self, player):
         p1board, p2board = self.input_data_board()
         player_matrix = np.zeros((6, 7))
-        if player == 1: player_matrix += 1
-        game_matrix = np.array(
-            (p1board, p2board, player_matrix))
+        if player == 1:
+            player_matrix += 1
+            game_matrix = np.array(
+                (p1board, p2board, player_matrix))
+        else:
+            game_matrix = np.array(
+                (p2board, p1board, player_matrix))
         return game_matrix.reshape((1, 6, 7, 3))
