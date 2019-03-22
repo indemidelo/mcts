@@ -18,7 +18,7 @@ class Training():
 
     def train(self):
         for g in range(self.n_games):
-            tau = 0.99 ** g
+            tau = 0.9999 ** g
             simgame = SimulatedGame(
                 self.p1, self.p2, self.n_iter,
                 self.n_moves, tau=tau)

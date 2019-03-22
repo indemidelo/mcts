@@ -123,7 +123,8 @@ def AlphaGo19Net(inputs, pi, z, beta, n_res_blocks, learning_rate,
         loss_policy = tf.losses.softmax_cross_entropy(pi, pred_policy)
         # loss_policy = tf.reduce_sum(tf.multiply(pi, tf.math.log(pred_policy)), axis=1)
         regularization = beta * tf.reduce_sum(regularization_losses)
-        loss = 0.1 * loss_value + 0.9 * loss_policy + regularization
+        # loss = 0.1 * loss_value + 0.9 * loss_policy + regularization
+        loss = loss_value + loss_policy
 
     # Configure optimizer
     optimizer = tf.train.MomentumOptimizer(
