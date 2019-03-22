@@ -166,18 +166,14 @@ class Board():
         return av_moves
 
     def input_data_board(self):
-        p1board = []
+        p1board, p2board = list(), list()
         for j in self.board:
-            row = []
+            row1, row2 = list(), list()
             for i in j:
-                row.append(1.0 if i == 1 else 0.0)
-            p1board.append(row)
-        p2board = []
-        for j in self.board:
-            row = []
-            for i in j:
-                row.append(1.0 if i == 2 else 0.0)
-            p2board.append(row)
+                row1.append(float(i == 1))
+                row2.append(float(i == 2))
+            p1board.append(row1)
+            p2board.append(row2)
         return p1board, p2board
 
     def board_as_tensor(self, player):

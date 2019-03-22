@@ -44,8 +44,8 @@ class SimulatedGame():
     def move(self):
         for j in range(self.n_iter):
             leaf, history = self.traverse_to_leaf()
-            board_as_tensor = leaf.board.board_as_tensor(
-                self.whos_opponent(leaf.player).name)
+            board_as_tensor = leaf.board.\
+                board_as_tensor(leaf.player.name)
             p, v = self.nn.eval(board_as_tensor)
             if leaf.board.playing:
                 self.expand_leaf_(leaf, p)
