@@ -15,7 +15,7 @@ class State():
         self.n = 0
 
     def __str__(self):
-        return str(f'p: {self.player.name} - '
+        return str(f'p: {self.player.color} - '
                    f'a: {self.action} - n: {self.n}')
 
     @property

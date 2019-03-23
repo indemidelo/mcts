@@ -10,7 +10,7 @@ class Logger(metaclass=Singleton):
         self.saved_states['state'].append(state)
         self.saved_states['pi'].append(pi)
         print(f'pi: {pi}')
-        print(f'Active player: {state.player.name} '
+        print(f'Active player: {state.player.color} '
               f'- action: {state.action}')
         # print(f'Board:')
         # print(f'{state.board}')
@@ -19,7 +19,7 @@ class Logger(metaclass=Singleton):
         for state in self.saved_states['state']:
             if winner is None:
                 result = 0
-            elif winner == state.player.name:
+            elif winner == state.player.color:
                 result = 1
             else:
                 result = -1
@@ -33,7 +33,7 @@ class Logger(metaclass=Singleton):
         raw_data = {'input': list(), 'pi': list(), 'z': list()}
         for ind in indices:
             state = self.saved_states['state'][ind]
-            player = state.player.name
+            player = state.player.color
             raw_data['input'].append(state.board.board_as_tensor(player))
             raw_data['pi'].append(list(self.saved_states['pi'][ind].values()))
             print(raw_data['pi'][-1])
