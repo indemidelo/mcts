@@ -1,5 +1,6 @@
-from src.singleton import Singleton
 import random
+from src.config import CFG
+from src.singleton import Singleton
 
 
 class Logger(metaclass=Singleton):
@@ -9,9 +10,8 @@ class Logger(metaclass=Singleton):
     def log_single_move(self, state, pi):
         self.saved_states['state'].append(state)
         self.saved_states['pi'].append(pi)
-        print(f'pi: {pi}')
-        print(f'Active player: {state.player.color} '
-              f'- action: {state.action}')
+        # print(f'pi: {pi}')
+        # print(f'Active player: {state.player.color} - action: {state.action}')
         # print(f'Board:')
         # print(f'{state.board}')
 
@@ -25,18 +25,18 @@ class Logger(metaclass=Singleton):
                 result = -1
             self.saved_states['z'].append(result)
 
-    def export_data_for_training(self, winner, n_moves):
+    def export_data_for_training(self, winner):
         self.log_results(winner)
         n_states = len(self.saved_states['state'])
         indices = random.sample(
-            range(n_states), min(n_states, n_moves))
-        raw_data = {'input': list(), 'pi': list(), 'z': list()}
+            range(n_states), min(n_states, CFG.n_moves))
+        raw_data = {'state': list(), 'pi': list(), 'z': list()}
         for ind in indices:
             state = self.saved_states['state'][ind]
             player = state.player.color
-            raw_data['input'].append(state.board.board_as_tensor(player))
+            raw_data['state'].append(state.board.board_as_tensor(player))
             raw_data['pi'].append(list(self.saved_states['pi'][ind].values()))
-            print(raw_data['pi'][-1])
+            # print(raw_data['pi'][-1])
             raw_data['z'].append(self.saved_states['z'][ind])
         self.saved_states = {'state': list(), 'pi': list(), 'z': list()}
         return raw_data

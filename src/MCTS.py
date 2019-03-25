@@ -1,26 +1,20 @@
 import random
 import numpy as np
 from copy import deepcopy
+from src.config import CFG
 from src.Board import Board
 from src.State import State
 from src.Logger import Logger
+from src.Player import Player
 from src.NeuralNetwork import NeuralNetwork
 
 
 class SimulatedGame():
-    def __init__(self, player_one, player_two,
-                 n_iter, n_moves, c_puct=2, tau=1, eps=0.25,
-                 dir_noise=0.03):
-        self.player_one = player_one
-        self.player_two = player_two
+    def __init__(self):
         self.nn = NeuralNetwork()
-        self.n_iter = n_iter
         self.logger = Logger()
-        self.n_moves = n_moves
-        self.c_puct = c_puct
-        self.tau = tau
-        self.eps = eps
-        self.dir_noise = dir_noise
+        self.player_one = Player(1)
+        self.player_two = Player(2)
 
     def initialize(self):
         self.N = 0
@@ -36,9 +30,8 @@ class SimulatedGame():
         self.initialize()
         while self.tree.board.playing:
             self.move()
-            print(self.tree.board)
-        training_data = self.logger.export_data_for_training(
-            self.tree.board.winner, self.n_moves)
+            # print(self.tree.board)
+        training_data = self.logger.export_data_for_training(self.tree.board.winner)
         return training_data
 
     def switch_players_(self):
@@ -46,7 +39,7 @@ class SimulatedGame():
             self.opponent, self.active_player
 
     def move(self):
-        for j in range(self.n_iter):
+        for j in range(CFG.num_mcts_sims):
             leaf, history = self.traverse_to_leaf()
             board_as_tensor = leaf.board.\
                 board_as_tensor(leaf.player.color)
@@ -72,11 +65,11 @@ class SimulatedGame():
         opponent = self.whos_opponent(leaf.player)
         available_moves = leaf.board.list_available_moves()
         noise = iter(np.random.dirichlet(
-            [self.dir_noise] * len(available_moves)))
+            [CFG.dirichlet_alpha] * len(available_moves)))
         for action in available_moves:
             new_board = deepcopy(leaf.board)
             new_board.play_(leaf.player.color, action)
-            prior = (1 - self.eps) * p[action] + self.eps * next(noise)
+            prior = (1 - CFG.epsilon) * p[action] + CFG.epsilon * next(noise)
             new_state = State(action, opponent, new_board, prior)
             leaf.children.append(new_state)
 
@@ -88,7 +81,7 @@ class SimulatedGame():
     def sample_move(self):
         pi = {k: 0.0 for k in range(7)}  # todo change here to generalize over games
         for s in self.tree.children:
-            pi[s.action] = s.n ** (1 / self.tau)
+            pi[s.action] = s.n ** (1 / CFG.temp_init)
         pi = {k: v / sum(pi.values()) for k, v in pi.items()}
         action = random.choices(*zip(*pi.items()), k=1)[0]
         next_state = next((x for x in self.tree.children if x.action == action))
