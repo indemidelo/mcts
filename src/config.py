@@ -57,4 +57,4 @@ class CFG(object):
     record_loss = 1
     loss_file = "loss.txt"
     game = 2
-    checkpoint = 100
+    checkpoint = 25

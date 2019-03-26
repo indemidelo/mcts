@@ -14,12 +14,12 @@ class Training():
         for i in range(CFG.num_iterations):
             training_data = {'state': [], 'pi': [], 'z': []}
             for g in range(CFG.num_games):
-                simgame = SimulatedGame()
+                simgame = SimulatedGame(g + i * CFG.num_iterations)
                 training_data_loop = simgame.play_a_game()
                 self.update_training_data_(training_data, training_data_loop)
                 print(f'Game {g + 1} in iter {i + 1} won by player {simgame.tree.board.winner}')
-                # if (g + 1) % CFG.checkpoint == 0:
-                    # self.test()
+            if (i + 1) % CFG.checkpoint == 0:
+                self.test()
             self.nn.train(*self.prepare_data(training_data))
 
     def test(self):

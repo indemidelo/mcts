@@ -33,7 +33,7 @@ class Board():
             for i in j:
                 value = f'{bcolors.OKBLUE}O {bcolors.ENDC}' \
                     if i == 1 else f'{bcolors.RED}X {bcolors.ENDC}' \
-                    if i == 2 else f'{bcolors.GRAY}_ {bcolors.ENDC}'
+                    if i == -1 else f'{bcolors.GRAY}_ {bcolors.ENDC}'
                 print(f'{value}|', end=' ')
             print()
         print('---1---2---3---4---5---6---7---')

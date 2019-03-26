@@ -10,16 +10,12 @@ class Logger(metaclass=Singleton):
     def log_single_move(self, state, pi):
         self.saved_states['state'].append(state)
         self.saved_states['pi'].append(pi)
-        # print(f'pi: {pi}')
-        # print(f'Active player: {state.player.color} - action: {state.action}')
-        # print(f'Board:')
-        # print(f'{state.board}')
 
     def log_results(self, winner):
         for state in self.saved_states['state']:
             if winner is None:
                 result = 0
-            elif winner == state.player.color:
+            elif winner == state.player_color:
                 result = 1
             else:
                 result = -1
@@ -33,7 +29,7 @@ class Logger(metaclass=Singleton):
         raw_data = {'state': list(), 'pi': list(), 'z': list()}
         for ind in indices:
             state = self.saved_states['state'][ind]
-            player = state.player.color
+            player = state.player_color
             raw_data['state'].append(state.board.board_as_tensor(player))
             raw_data['pi'].append(list(self.saved_states['pi'][ind].values()))
             # print(raw_data['pi'][-1])
