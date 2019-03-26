@@ -32,9 +32,9 @@ class CFG(object):
         game: Number of the game. 0: Tic Tac Toe, 1: Othello, 2: Connect Four.
         checkpoint: Number of iteration between each model storing
     """
-    num_iterations = 4
-    num_games = 30
-    num_mcts_sims = 50
+    num_iterations = 1000
+    num_games = 500
+    num_mcts_sims = 100
     n_moves = float('inf')
     c_puct = 1
     l2_val = 0.0001
@@ -57,4 +57,4 @@ class CFG(object):
     record_loss = 1
     loss_file = "loss.txt"
     game = 2
-    checkpoint = 25
+    checkpoint = 200
