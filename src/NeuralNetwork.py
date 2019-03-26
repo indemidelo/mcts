@@ -16,7 +16,8 @@ class NeuralNetwork(metaclass=Singleton):
         self.sess = tf.Session()
         self.sess.run(tf.global_variables_initializer())
 
-    def eval(self, board):
+    def eval(self, state):
+        board = state.board.board_as_tensor(state.player.color)
         p, v = self.sess.run([self.pred_policy, self.pred_value],
                              feed_dict={self.inputs: board})
         return p[0], v[0][0]

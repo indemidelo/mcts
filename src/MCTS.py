@@ -30,7 +30,7 @@ class SimulatedGame():
         self.initialize()
         while self.tree.board.playing:
             self.move()
-            # print(self.tree.board)
+            print(self.tree.board)
         training_data = self.logger.export_data_for_training(self.tree.board.winner)
         return training_data
 
@@ -39,27 +39,29 @@ class SimulatedGame():
             self.opponent, self.active_player
 
     def move(self):
-        for j in range(CFG.num_mcts_sims):
-            leaf, history = self.traverse_to_leaf()
-            board_as_tensor = leaf.board.\
-                board_as_tensor(leaf.player.color)
-            p, v = self.nn.eval(board_as_tensor)
-            if leaf.board.playing:
-                self.expand_leaf_(leaf, p)
-            self.backpropagation_(history, v)
-            self.N += 1
+        self.search_()
         next_state, pi = self.sample_move()
         self.logger.log_single_move(self.tree, pi)
         self.switch_players_()
         self.tree = next_state
+        self.tree.parent = None
+
+    def search_(self):
+        for j in range(CFG.num_mcts_sims):
+            leaf = self.traverse_to_leaf()
+            if leaf.board.playing:
+                p, v = self.nn.eval(leaf)
+                self.expand_leaf_(leaf, p)
+            else:
+                v = -leaf.board.reward
+            self.backpropagation_(leaf, v)
+            self.N += 1
 
     def traverse_to_leaf(self):
         leaf = self.tree
-        history = []
         while leaf.children:
             leaf = max(leaf.children, key=lambda x: x.gain)
-            history.append({'leaf': leaf, 'brothers': leaf.children})
-        return leaf, history
+        return leaf
 
     def expand_leaf_(self, leaf, p):
         opponent = self.whos_opponent(leaf.player)
@@ -70,13 +72,15 @@ class SimulatedGame():
             new_board = deepcopy(leaf.board)
             new_board.play_(leaf.player.color, action)
             prior = (1 - CFG.epsilon) * p[action] + CFG.epsilon * next(noise)
-            new_state = State(action, opponent, new_board, prior)
+            new_state = State(action, opponent, new_board, prior, leaf)
             leaf.children.append(new_state)
 
-    def backpropagation_(self, history, v):
-        for action in history:
-            n_all = 1 + sum([b.n for b in action['brothers']])
-            action['leaf'].update(v, n_all)
+    def backpropagation_(self, leaf, v):
+        while leaf.parent:
+            n_all = 1 + sum([b.n for b in leaf.parent.children])
+            leaf.update(v, n_all)
+            leaf = leaf.parent
+            v = -v
 
     def sample_move(self):
         pi = {k: 0.0 for k in range(7)}  # todo change here to generalize over games

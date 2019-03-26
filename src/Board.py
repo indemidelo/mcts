@@ -21,6 +21,7 @@ class Board():
         self.plays = 0
         self.full = False
         self.winner = None
+        self.reward = 0
 
     def __repr__(self):
         print()
@@ -57,6 +58,7 @@ class Board():
                 if self.check_connect(player, col, pos):
                     self.playing = False
                     self.winner = player
+                    self.reward = 1
             return pos
 
     def find_free_spot(self, col):
