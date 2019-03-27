@@ -8,4 +8,4 @@ if __name__ == '__main__':
 
     # Testing
     print('Neural Network Testing')
-    t.test()
+    t.test_ai()

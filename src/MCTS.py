@@ -15,10 +15,11 @@ class SimulatedGame():
         self.temp_it = temp_it
         self.tree = State(None, 1, Board(), p=1)
 
-    def play_a_game(self):
+    def play_a_game(self, print_board=False):
         while self.tree.board.playing:
             self.move()
-            # print(self.tree.board)
+            if print_board:
+                print(self.tree.board)
         training_data = self.logger.export_data_for_training(self.tree.board.winner)
         return training_data
 
