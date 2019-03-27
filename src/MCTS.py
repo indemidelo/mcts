@@ -30,6 +30,16 @@ class SimulatedGame():
         self.tree = next_state
         self.tree.parent = None
 
+    def play(self, board, player_color):
+        """
+        To play against an opponent
+        :return:
+        """
+        self.tree = State(None, player_color, board, p=1)
+        self.search_()
+        next_state, _ = self.sample_move()
+        board.play_(player_color, next_state.action)
+
     def search_(self):
         for j in range(CFG.num_mcts_sims):
             leaf = self.traverse_to_leaf()

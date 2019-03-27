@@ -23,7 +23,7 @@ class Training():
                 print(f'Game {g + 1} in iter {i + 1} won by player {simgame.tree.board.winner}')
 
             self.nn.train(*self.prepare_data(training_data))
-            self.test_ai()
+            self.test()
 
             if (i + 1) % CFG.checkpoint == 0:
                 filename = f'{CFG.model_directory}prova_iter_{i + 1}.ckpt'
@@ -33,21 +33,6 @@ class Training():
             self.nn.save_model(model_filename)
 
     def test(self, model_filename=None):
-        from src.Board import Board
-        from src.tfPlayer import tfPlayer
-        from src.NNGame import NNRecordedGame
-        b = Board()
-        if model_filename:
-            self.nn.load_model(model_filename)
-        p1 = tfPlayer(1, b, self.nn.sess, self.nn.pred_policy,
-                      self.nn.inputs, training=False)
-        p2 = tfPlayer(-1, b, self.nn.sess, self.nn.pred_policy,
-                      self.nn.inputs, training=False)
-        nn_g = NNRecordedGame(b, p1, p2, 1)
-        nn_g.initialize()
-        nn_g.play_a_game(print_board=True)
-
-    def test_ai(self, model_filename=None):
         if model_filename:
             self.nn.load_model(model_filename)
         SimulatedGame(CFG.temp_thresh + 1).play_a_game(print_board=True)
