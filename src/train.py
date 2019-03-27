@@ -10,7 +10,7 @@ class Training():
         self.nn = NeuralNetwork()
         self.p1, self.p2 = Player(1), Player(2)
 
-    def train(self):
+    def train(self, model_filename=None):
 
         for i in range(CFG.num_iterations):
 
@@ -23,16 +23,22 @@ class Training():
                 print(f'Game {g + 1} in iter {i + 1} won by player {simgame.tree.board.winner}')
 
             self.nn.train(*self.prepare_data(training_data))
+            self.test()
 
             if (i + 1) % CFG.checkpoint == 0:
-                self.test()
-                self.nn.save(i + 1)
+                filename = f'{CFG.model_directory}prova_iter_{i + 1}.ckpt'
+                self.nn.save_model(filename)
 
-    def test(self):
+        if model_filename:
+            self.nn.save_model(model_filename)
+
+    def test(self, model_filename=None):
         from src.Board import Board
         from src.tfPlayer import tfPlayer
         from src.NNGame import NNRecordedGame
         b = Board()
+        if model_filename:
+            self.nn.load_model(model_filename)
         p1 = tfPlayer(1, b, self.nn.sess, self.nn.pred_policy,
                       self.nn.inputs, training=False)
         p2 = tfPlayer(-1, b, self.nn.sess, self.nn.pred_policy,

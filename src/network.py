@@ -124,7 +124,7 @@ def AlphaGo19Net(inputs, pi, z):
         # loss_policy = tf.reduce_sum(tf.multiply(pi, tf.math.log(pred_policy)), axis=1)
         regularization = CFG.l2_val * tf.reduce_sum(regularization_losses)
         # loss = 0.1 * loss_value + 0.9 * loss_policy + regularization
-        loss = loss_value + loss_policy
+        loss = loss_value + loss_policy + regularization
 
     # Configure optimizer
     optimizer = tf.train.MomentumOptimizer(
@@ -136,9 +136,5 @@ def AlphaGo19Net(inputs, pi, z):
     # todo fix this accuracy
     # acc_policy = tf.reduce_mean(pred_policy - pi)
     # acc_value = tf.reduce_mean(pred_value - z)
-    acc_policy = loss_policy
-    acc_value = loss_value
 
-    # mean_pred_policy = tf.reduce_mean(pred_policy)
-
-    return pred_policy, pred_value, loss, optimizer, acc_policy, acc_value  # , mean_pred_policy
+    return pred_policy, pred_value, loss, optimizer, loss_policy, loss_value
