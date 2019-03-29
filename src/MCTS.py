@@ -47,7 +47,7 @@ class SimulatedGame():
                 p, v = self.nn.eval(leaf)
                 self.expand_leaf_(leaf, p)
             else:
-                v = -leaf.board.reward
+                v = leaf.board.reward
             self.backpropagation_(leaf, v)
 
     def traverse_to_leaf(self):

@@ -35,7 +35,7 @@ if __name__ == '__main__':
     from src.config import CFG
     b = Board()
     ai = SimulatedGame(CFG.temp_thresh + 1)
-    ai.nn.load_model('../models/prova.ckpt')
+    # ai.nn.load_model('../models/prova_iter_50.ckpt')
     human = HumanPlayer('pippo')
     OrganizedMatch(b, ai, human).play_a_game(True)
 

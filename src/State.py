@@ -25,7 +25,8 @@ class State():
 
     def __str__(self):
         return str(f'p: {self.player_color} - '
-                   f'a: {self.action} - n: {self.n}')
+                   f'a: {self.action} - n: {self.n} - '
+                   f'gain: {self.gain}')
 
     @property
     def gain(self):

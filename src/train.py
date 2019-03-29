@@ -28,6 +28,7 @@ class Training():
             if (i + 1) % CFG.checkpoint == 0:
                 filename = f'{CFG.model_directory}prova_iter_{i + 1}.ckpt'
                 self.nn.save_model(filename)
+                self.nn.load_model(filename)
 
         if model_filename:
             self.nn.save_model(model_filename)
