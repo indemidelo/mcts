@@ -22,17 +22,23 @@ class Logger(metaclass=Singleton):
             self.saved_states['z'].append(result)
 
     def export_data_for_training(self, winner):
+        """
+        Export data for training only if the game is not a draw
+        :param winner: 1 if White -1 if Black
+        :return: (dict)
+        """
+        raw_data = {'state': list(), 'pi': list(), 'z': list()}
+        if winner is None:
+            return raw_data
         self.log_results(winner)
         n_states = len(self.saved_states['state'])
         indices = random.sample(
-            range(n_states), min(n_states, CFG.n_moves))
-        raw_data = {'state': list(), 'pi': list(), 'z': list()}
+            range(n_states), int(n_states * CFG.train_split))
         for ind in indices:
             state = self.saved_states['state'][ind]
             player = state.player_color
             raw_data['state'].append(state.board.board_as_tensor(player))
             raw_data['pi'].append(list(self.saved_states['pi'][ind].values()))
-            # print(raw_data['pi'][-1])
             raw_data['z'].append(self.saved_states['z'][ind])
         self.saved_states = {'state': list(), 'pi': list(), 'z': list()}
         return raw_data

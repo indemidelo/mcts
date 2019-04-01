@@ -10,10 +10,12 @@ from src.OrganizedMatch import OrganizedMatch
 
 
 class Training():
-    def __init__(self):
+    def __init__(self, model_name):
         self.nn = NeuralNetwork()
         self.prev_nn = NeuralNetwork()
         self.p1, self.p2 = Player(1), Player(2)
+        if model_name:
+            self.nn.load_model(model_name)
 
     def train(self, model_filename=None):
 
@@ -30,7 +32,7 @@ class Training():
                 elapsed = time.time() - start_time
                 mean_el += elapsed / CFG.num_games
                 print(f'Game {g + 1} in iter {i + 1} '
-                      f'won by player {simgame.tree.board.winner} '
+                      f'won by player {simgame.tree.board.winner}'
                       f' - elapsed: {round(elapsed, 2)}s')
             print(f'Mean elapsed time for one iteration = {round(mean_el, 2)}')
 
@@ -61,7 +63,7 @@ class Training():
                 wins += 1
             elif winner is None:
                 num_eval_games -= 1
-        if num_eval_games and wins > CFG.eval_win_rate:
+        if num_eval_games and wins > CFG.eval_win_rate * num_eval_games:
             self.nn.age += 1
             print(f'Stronger network trained :) WR='
                   f'{round(wins / num_eval_games, 2)}'
