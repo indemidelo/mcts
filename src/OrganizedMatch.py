@@ -26,15 +26,17 @@ class OrganizedMatch():
                 print(f'Player {player_color} move')
                 print(self.board)
             player_color = -player_color
+        # return the winning player
+        return self.players[-player_color]
 
 
 if __name__ == '__main__':
     from src.Board import Board
     from src.HumanPlayer import HumanPlayer
     from src.MCTS import SimulatedGame
-    from src.config import CFG
+    from src.NeuralNetwork import NeuralNetwork
     b = Board()
-    ai = SimulatedGame(CFG.temp_thresh + 1)
+    ai = SimulatedGame(NeuralNetwork(), player_name='ai')
     # ai.nn.load_model('../models/prova_iter_50.ckpt')
     human = HumanPlayer('pippo')
     OrganizedMatch(b, ai, human).play_a_game(True)

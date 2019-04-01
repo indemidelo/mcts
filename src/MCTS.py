@@ -5,14 +5,14 @@ from src.config import CFG
 from src.Board import Board
 from src.State import State
 from src.Logger import Logger
-from src.NeuralNetwork import NeuralNetwork
 
 
 class SimulatedGame():
-    def __init__(self, temp_it):
-        self.nn = NeuralNetwork()
+    def __init__(self, nn, temp_it=None, player_name=None):
+        self.nn = nn
         self.logger = Logger()
-        self.temp_it = temp_it
+        self.temp_it = temp_it or CFG.temp_thresh + 1
+        self.player_name = player_name
         self.tree = State(None, 1, Board(), p=1)
 
     def play_a_game(self, print_board=False):
