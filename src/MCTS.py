@@ -8,10 +8,10 @@ from src.Logger import Logger
 
 
 class SimulatedGame():
-    def __init__(self, nn, temp_it=None, player_name=None):
+    def __init__(self, nn, temp_it=CFG.temp_thresh+1, player_name=None):
         self.nn = nn
         self.logger = Logger()
-        self.temp_it = temp_it or CFG.temp_thresh + 1
+        self.temp_it = temp_it
         self.player_name = player_name
         self.tree = State(None, 1, Board(), p=1)
 

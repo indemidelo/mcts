@@ -32,10 +32,10 @@ class CFG(object):
         game: Number of the game. 0: Tic Tac Toe, 1: Othello, 2: Connect Four.
         checkpoint: Number of iteration between each model storing
     """
-    num_iterations = 4#200
-    num_games = 30#500
-    num_mcts_sims = 100#
-    n_moves = 300#4000# float('inf')
+    num_iterations = 20
+    num_games = 500
+    num_mcts_sims = 150
+    n_moves = num_games * 8
     c_puct = 1
     l2_val = 0.0001
     momentum = 0.9
@@ -43,9 +43,9 @@ class CFG(object):
     t_policy_val = 0.0001
     temp_init = 1
     temp_final = 0.001
-    temp_thresh = 0#10
+    temp_thresh = 10
     epochs = 10
-    batch_size = 128
+    batch_size = 256
     dirichlet_alpha = 0.3
     epsilon = 0.25
     model_directory = "./models/"

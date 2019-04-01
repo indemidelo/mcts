@@ -27,7 +27,9 @@ class OrganizedMatch():
                 print(self.board)
             player_color = -player_color
         # return the winning player
-        return self.players[-player_color]
+        if self.board.winner:
+            return self.players[self.board.winner].player_name
+        return None
 
 
 if __name__ == '__main__':
