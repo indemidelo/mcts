@@ -9,7 +9,7 @@ class NeuralNetwork(metaclass=Singleton):
         self.inputs = tf.placeholder(tf.float32, [None, 6, 7, 3], name='InputData')
         self.pi = tf.placeholder(tf.float32, [None, 7], name='pi')
         self.z = tf.placeholder(tf.float32, [None, 1], name='z')
-        self.graph = tf.Graph()
+        self.age = 0
         self.pred_policy, self.pred_value, self.loss, self.optimizer, \
         self.loss_policy, self.loss_value = AlphaGo19Net(
             self.inputs, self.pi, self.z)

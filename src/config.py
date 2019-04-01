@@ -33,7 +33,7 @@ class CFG(object):
         checkpoint: Number of iteration between each model storing
     """
     num_iterations = 20
-    num_games = 500
+    num_games = 50
     num_mcts_sims = 150
     n_moves = num_games * 8
     c_puct = 1

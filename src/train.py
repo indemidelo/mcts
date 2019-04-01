@@ -50,19 +50,31 @@ class Training():
         print('Networks evaluation')
         ai_new = SimulatedGame(self.nn, player_name='new')
         ai_old = SimulatedGame(self.prev_nn, player_name='old')
-        winrate = 0
+        wins = 0
+        num_eval_games = CFG.num_eval_games
         for j in range(CFG.num_eval_games):
             b = Board()
             match = OrganizedMatch(b, ai_new, ai_old)
             winner = match.play_a_game()
             print(f'Match {j + 1} won by {winner}')
             if winner == 'new':
-                winrate += 1 / CFG.num_eval_games
-        if winrate > CFG.eval_win_rate:
-            print(f'Stronger network trained :) WR={round(winrate, 2)}')
+                wins += 1
+            elif winner is None:
+                num_eval_games -= 1
+        if num_eval_games and wins > CFG.eval_win_rate:
+            self.nn.age += 1
+            print(f'Stronger network trained :) WR='
+                  f'{round(wins / num_eval_games, 2)}'
+                  f' network age={self.nn.age}')
             self.nn = self.prev_nn
+        elif num_eval_games:
+            print(f'Weaker network trained :( WR='
+                  f'{round(wins / num_eval_games, 2)}'
+                  f' network age={self.nn.age}')
+            self.prev_nn = self.nn
         else:
-            print(f'Weaker network trained :( WR={round(winrate, 2)}')
+            print('All draws! No update :('
+                  f' network age={self.nn.age}')
             self.prev_nn = self.nn
 
     def test(self, model_filename=None):
