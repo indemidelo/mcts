@@ -19,7 +19,7 @@ class NeuralNetwork(object):
             self.pred_policy, self.pred_value, self.loss, self.optimizer, \
             self.loss_policy, self.loss_value = AlphaGo19Net(
                 self.inputs, self.pi, self.z)
-            self.saver = tf.train.Saver()
+            self.saver = tf.train.Saver(max_to_keep=None)
             self.sess = tf.Session()
             self.sess.run(tf.global_variables_initializer())
 

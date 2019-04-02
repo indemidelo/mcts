@@ -11,12 +11,13 @@ from src.OrganizedMatch import OrganizedMatch
 date = datetime.now().strftime("%y%m%d")
 
 
-class Training():
+class Training:
     def __init__(self, model_name=None):
-        self.nn = NeuralNetwork()
+        self.net = NeuralNetwork()
+        self.eval_net = NeuralNetwork()
         self.p1, self.p2 = Player(1), Player(2)
         if model_name:
-            self.nn.load_model(model_name)
+            self.net.load_model(model_name)
 
     def train(self):
 
@@ -27,7 +28,7 @@ class Training():
             mean_el = 0
             for g in range(CFG.num_games):
                 start_time = time.time()
-                simgame = SimulatedGame(self.nn, g + i * CFG.num_iterations)
+                simgame = SimulatedGame(self.net, g + i * CFG.num_iterations)
                 training_data_loop = simgame.play_a_game()
                 self.update_training_data_(training_data, training_data_loop)
                 elapsed = time.time() - start_time
@@ -37,23 +38,23 @@ class Training():
                       f' - elapsed: {round(elapsed, 2)}s')
             print(f'Mean elapsed time for one iteration = {round(mean_el, 2)}')
 
-            self.nn.train(*self.prepare_data(training_data))
+            self.net.train(*self.prepare_data(training_data))
             self.test()
 
             if i == 0:
-                self.nn.save_model(f'{CFG.model_directory}old/old.ckpt')
+                self.net.save_model(f'{CFG.model_directory}old/old_nn')
+                self.eval_net.load_model(f'{CFG.model_directory}old/old_nn')
 
             elif (i + 1) % CFG.checkpoint == 0:
                 filename = f'{CFG.model_directory}prova_{date}_iter_{i + 1}.ckpt'
                 self.eval_networks_()
-                self.nn.save_model(filename)
-                self.nn.load_model(filename)
+                self.net.save_model(filename)
+                self.net.load_model(filename)
 
     def eval_networks_(self):
         print('Networks evaluation')
-        old_nn = NeuralNetwork(f'{CFG.model_directory}old/old.ckpt')
-        ai_new = SimulatedGame(self.nn, player_name='new')
-        ai_old = SimulatedGame(old_nn, player_name='old')
+        ai_new = SimulatedGame(self.net, player_name='new')
+        ai_old = SimulatedGame(self.eval_net, player_name='old')
         wins = 0
         num_eval_games = CFG.num_eval_games
         for j in range(CFG.num_eval_games):
@@ -66,28 +67,26 @@ class Training():
             elif winner is None:
                 num_eval_games -= 1
         if num_eval_games and wins > CFG.eval_win_rate * num_eval_games:
-            self.nn.age += 1
+            self.net.age += 1
             print(f'Stronger network trained :) WR='
                   f'{round(wins / num_eval_games, 2)}'
-                  f' network age={self.nn.age}')
-            print('reference?', self.nn == old_nn)
-            self.nn.save_model(f'{CFG.model_directory}old/old.ckpt')
+                  f' network age={self.net.age}')
+            self.net.save_model(f'{CFG.model_directory}old/old_nn')
+            self.eval_net.load_model(f'{CFG.model_directory}old/old_nn')
         elif num_eval_games:
             print(f'Weaker network trained :( WR='
                   f'{round(wins / num_eval_games, 2)}'
-                  f' network age={self.nn.age}')
-            print('reference?', self.nn == old_nn)
-            self.nn.load_model(f'{CFG.model_directory}old/old.ckpt')
+                  f' network age={self.net.age}')
+            self.net.load_model(f'{CFG.model_directory}old/old_nn')
         else:
             print('All draws! No update :('
-                  f' network age={self.nn.age}')
-            print('reference?', self.nn == old_nn)
-            self.nn.load_model(f'{CFG.model_directory}/old/old.ckpt')
+                  f' network age={self.net.age}')
+            self.net.load_model(f'{CFG.model_directory}/old/old_nn')
 
     def test(self, model_filename=None):
         if model_filename:
-            self.nn.load_model(model_filename)
-        SimulatedGame(self.nn).play_a_game(print_board=True)
+            self.net.load_model(model_filename)
+        SimulatedGame(self.net).play_a_game(print_board=True)
 
     def update_training_data_(self, data, data_loop):
         data['state'] += data_loop['state']
