@@ -1,6 +1,6 @@
 import numpy as np
 import time
-from copy import deepcopy
+from datetime import datetime
 from src.Board import Board
 from src.config import CFG
 from src.MCTS import SimulatedGame
@@ -8,16 +8,17 @@ from src.Player import Player
 from src.NeuralNetwork import NeuralNetwork
 from src.OrganizedMatch import OrganizedMatch
 
+date = datetime.now().strftime("%y%m%d")
+
 
 class Training():
-    def __init__(self, model_name):
+    def __init__(self, model_name=None):
         self.nn = NeuralNetwork()
-        self.prev_nn = NeuralNetwork()
         self.p1, self.p2 = Player(1), Player(2)
         if model_name:
             self.nn.load_model(model_name)
 
-    def train(self, model_filename=None):
+    def train(self):
 
         for i in range(CFG.num_iterations):
 
@@ -39,19 +40,20 @@ class Training():
             self.nn.train(*self.prepare_data(training_data))
             self.test()
 
-            if (i + 1) % CFG.checkpoint == 0:
-                filename = f'{CFG.model_directory}prova_190401_iter_{i + 1}.ckpt'
+            if i == 0:
+                self.nn.save_model(f'{CFG.model_directory}old/old.ckpt')
+
+            elif (i + 1) % CFG.checkpoint == 0:
+                filename = f'{CFG.model_directory}prova_{date}_iter_{i + 1}.ckpt'
                 self.eval_networks_()
                 self.nn.save_model(filename)
                 self.nn.load_model(filename)
 
-        if model_filename:
-            self.nn.save_model(model_filename)
-
     def eval_networks_(self):
         print('Networks evaluation')
+        old_nn = NeuralNetwork(f'{CFG.model_directory}old/old.ckpt')
         ai_new = SimulatedGame(self.nn, player_name='new')
-        ai_old = SimulatedGame(self.prev_nn, player_name='old')
+        ai_old = SimulatedGame(old_nn, player_name='old')
         wins = 0
         num_eval_games = CFG.num_eval_games
         for j in range(CFG.num_eval_games):
@@ -68,16 +70,19 @@ class Training():
             print(f'Stronger network trained :) WR='
                   f'{round(wins / num_eval_games, 2)}'
                   f' network age={self.nn.age}')
-            self.nn = self.prev_nn
+            print('reference?', self.nn == old_nn)
+            self.nn.save_model(f'{CFG.model_directory}old/old.ckpt')
         elif num_eval_games:
             print(f'Weaker network trained :( WR='
                   f'{round(wins / num_eval_games, 2)}'
                   f' network age={self.nn.age}')
-            self.prev_nn = self.nn
+            print('reference?', self.nn == old_nn)
+            self.nn.load_model(f'{CFG.model_directory}old/old.ckpt')
         else:
             print('All draws! No update :('
                   f' network age={self.nn.age}')
-            self.prev_nn = self.nn
+            print('reference?', self.nn == old_nn)
+            self.nn.load_model(f'{CFG.model_directory}/old/old.ckpt')
 
     def test(self, model_filename=None):
         if model_filename:

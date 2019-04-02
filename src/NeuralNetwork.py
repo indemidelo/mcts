@@ -1,21 +1,27 @@
 import tensorflow as tf
 from src.config import CFG
-from src.singleton import Singleton
 from src.network import AlphaGo19Net
 
 
-class NeuralNetwork(metaclass=Singleton):
-    def __init__(self):
-        self.inputs = tf.placeholder(tf.float32, [None, 6, 7, 3], name='InputData')
-        self.pi = tf.placeholder(tf.float32, [None, 7], name='pi')
-        self.z = tf.placeholder(tf.float32, [None, 1], name='z')
+class NeuralNetwork(object):
+    def __init__(self, model_name=None):
         self.age = 0
-        self.pred_policy, self.pred_value, self.loss, self.optimizer, \
-        self.loss_policy, self.loss_value = AlphaGo19Net(
-            self.inputs, self.pi, self.z)
-        self.saver = tf.train.Saver()
-        self.sess = tf.Session()
-        self.sess.run(tf.global_variables_initializer())
+        self.session_initialize()
+        if model_name:
+            self.load_model(model_name)
+
+    def session_initialize(self):
+        self.graph = tf.Graph()
+        with self.graph.as_default():
+            self.inputs = tf.placeholder(tf.float32, [None, 6, 7, 3])
+            self.pi = tf.placeholder(tf.float32, [None, 7])
+            self.z = tf.placeholder(tf.float32, [None, 1])
+            self.pred_policy, self.pred_value, self.loss, self.optimizer, \
+            self.loss_policy, self.loss_value = AlphaGo19Net(
+                self.inputs, self.pi, self.z)
+            self.saver = tf.train.Saver()
+            self.sess = tf.Session()
+            self.sess.run(tf.global_variables_initializer())
 
     def eval(self, state):
         board = state.board.board_as_tensor(state.player_color)
