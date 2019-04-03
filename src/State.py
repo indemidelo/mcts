@@ -1,5 +1,5 @@
 from math import sqrt
-from src.config import CFG
+from config import CFG
 
 
 class State():

@@ -1,20 +1,20 @@
 import numpy as np
 import time
 from datetime import datetime
-from src.Board import Board
-from src.config import CFG
+from config import CFG
 from src.MCTS import SimulatedGame
 from src.Player import Player
 from src.NeuralNetwork import NeuralNetwork
-from src.OrganizedMatch import OrganizedMatch
+from OrganizedMatch import OrganizedMatch
 
 date = datetime.now().strftime("%y%m%d")
 
 
 class Training:
-    def __init__(self, model_name=None):
-        self.net = NeuralNetwork()
-        self.eval_net = NeuralNetwork()
+    def __init__(self, game, model_name=None):
+        self.game = game
+        self.net = NeuralNetwork(game)
+        self.eval_net = NeuralNetwork(game)
         self.p1, self.p2 = Player(1), Player(2)
         if model_name:
             self.net.load_model(model_name)
@@ -58,8 +58,7 @@ class Training:
         wins = 0
         num_eval_games = CFG.num_eval_games
         for j in range(CFG.num_eval_games):
-            b = Board()
-            match = OrganizedMatch(b, ai_new, ai_old)
+            match = OrganizedMatch(self.game(), ai_new, ai_old)
             winner = match.play_a_game()
             print(f'Match {j + 1} won by {winner}')
             if winner == 'new':
@@ -94,7 +93,8 @@ class Training:
         data['z'] += data_loop['z']
 
     def prepare_data(self, raw_data):
-        input_data = self.create_batches(np.array(raw_data['state']).reshape((-1, 6, 7, 3)))
+        input_data = self.create_batches(
+            np.array(raw_data['state']).reshape([-1] + self.game.input_shape()))
         output_data_pi = self.create_batches(np.array(raw_data['pi']))
         output_data_z = self.create_batches(np.array(raw_data['z']).reshape((-1, 1)))
         return input_data, output_data_pi, output_data_z

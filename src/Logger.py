@@ -1,9 +1,8 @@
 import random
-from src.config import CFG
-from src.singleton import Singleton
+from config import CFG
 
 
-class Logger(metaclass=Singleton):
+class Logger():
     def __init__(self):
         self.saved_states = {'state': list(), 'pi': list(), 'z': list()}
 

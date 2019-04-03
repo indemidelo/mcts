@@ -33,7 +33,7 @@ class OrganizedMatch():
 
 
 if __name__ == '__main__':
-    from src.Board import Board
+    from games.connect_four.ConnectFour import Board
     from src.HumanPlayer import HumanPlayer
     from src.MCTS import SimulatedGame
     from src.NeuralNetwork import NeuralNetwork

@@ -14,7 +14,7 @@ class bcolors:
     ENDC = '\033[0m'
 
 
-class Board():
+class ConnectFour():
     def __init__(self, rows=6, columns=7):
         self.board = np.zeros((rows, columns), dtype=float)
         self.history = np.zeros((rows, columns), dtype=int)
@@ -23,6 +23,14 @@ class Board():
         self.full = False
         self.winner = None
         self.reward = 0
+
+    @staticmethod
+    def input_shape():
+        return [6, 7, 3]
+
+    @staticmethod
+    def policy_shape():
+        return 7
 
     def __repr__(self):
         print()
@@ -152,15 +160,6 @@ class Board():
                 self.playing = False
                 return True
         return False
-
-    def uniform_board(self):
-        new_board = []
-        for j in self.board:
-            row = []
-            for i in j:
-                row.append(int(1 / (0.5 * i) if i else i))
-            new_board.append(row)
-        return new_board
 
     def list_available_moves(self) -> list:
         av_moves = list()

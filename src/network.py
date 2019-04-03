@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow import keras
-from src.config import CFG
+from config import CFG
 
 
 def ResidualBlock(input, regularizer):

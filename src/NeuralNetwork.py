@@ -1,10 +1,11 @@
 import tensorflow as tf
-from src.config import CFG
+from config import CFG
 from src.network import AlphaGo19Net
 
 
 class NeuralNetwork(object):
-    def __init__(self, model_name=None):
+    def __init__(self, game, model_name=None):
+        self.game = game
         self.age = 0
         self.session_initialize()
         if model_name:
@@ -13,8 +14,8 @@ class NeuralNetwork(object):
     def session_initialize(self):
         self.graph = tf.Graph()
         with self.graph.as_default():
-            self.inputs = tf.placeholder(tf.float32, [None, 6, 7, 3])
-            self.pi = tf.placeholder(tf.float32, [None, 7])
+            self.inputs = tf.placeholder(tf.float32, [None] + self.game.input_shape())
+            self.pi = tf.placeholder(tf.float32, [None, self.game.policy_shape()])
             self.z = tf.placeholder(tf.float32, [None, 1])
             self.pred_policy, self.pred_value, self.loss, self.optimizer, \
             self.loss_policy, self.loss_value = AlphaGo19Net(

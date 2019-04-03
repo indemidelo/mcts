@@ -1,8 +1,7 @@
 import random
 import numpy as np
 from copy import deepcopy
-from src.config import CFG
-from src.Board import Board
+from config import CFG
 from src.State import State
 from src.Logger import Logger
 
@@ -13,7 +12,7 @@ class SimulatedGame():
         self.logger = Logger()
         self.temp_it = temp_it
         self.player_name = player_name
-        self.tree = State(None, 1, Board(), p=1)
+        self.tree = State(None, 1, self.nn.game(), p=1)
 
     def play_a_game(self, print_board=False):
         while self.tree.board.playing:
@@ -75,7 +74,7 @@ class SimulatedGame():
             v = -v
 
     def sample_move(self):
-        pi = {k: 0.0 for k in range(7)}  # todo change here to generalize over games
+        pi = {k: 0.0 for k in range(self.nn.game.policy_shape())}
         for s in self.tree.children:
             pi[s.action] = s.n ** (1 / CFG.temp_init)
         if self.temp_it < CFG.temp_thresh:
