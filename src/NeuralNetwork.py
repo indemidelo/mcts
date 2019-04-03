@@ -14,11 +14,12 @@ class NeuralNetwork(object):
         self.graph = tf.Graph()
         with self.graph.as_default():
             self.inputs = tf.placeholder(tf.float32, [None, 6, 7, 3])
+            self.training = tf.placeholder(tf.bool)
             self.pi = tf.placeholder(tf.float32, [None, 7])
             self.z = tf.placeholder(tf.float32, [None, 1])
             self.pred_policy, self.pred_value, self.loss, self.optimizer, \
             self.loss_policy, self.loss_value = AlphaGo19Net(
-                self.inputs, self.pi, self.z)
+                self.inputs, self.training, self.pi, self.z)
             self.saver = tf.train.Saver(max_to_keep=None)
             self.sess = tf.Session()
             self.sess.run(tf.global_variables_initializer())
@@ -26,14 +27,16 @@ class NeuralNetwork(object):
     def eval(self, state):
         board = state.board.board_as_tensor(state.player_color)
         p, v = self.sess.run([self.pred_policy, self.pred_value],
-                             feed_dict={self.inputs: board})
+                             feed_dict={self.inputs: board,
+                                        self.training: False})
         return p[0], v[0][0]
 
     def train(self, input_data, output_data_pi, output_data_z):
         for epoch in range(CFG.epochs):
             loss_policy_mean, loss_value_mean, loss_mean, j = 0, 0, 0, 0
             for i, pi, z in zip(input_data, output_data_pi, output_data_z):
-                feed_dict = {self.inputs: i, self.pi: pi, self.z: z}
+                feed_dict = {self.inputs: i, self.training: True,
+                             self.pi: pi, self.z: z}
                 _, c, loss_policy, loss_value = self.sess.run(
                     [self.optimizer, self.loss, self.loss_policy,
                      self.loss_value], feed_dict=feed_dict)

@@ -53,7 +53,7 @@ class CFG(object):
     eval_win_rate = 0.55
     load_model = 1
     human_play = 0
-    resnet_blocks = 5
+    resnet_blocks = 10
     record_loss = 1
     loss_file = "loss.txt"
     game = 2
