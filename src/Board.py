@@ -17,6 +17,7 @@ class bcolors:
 class Board():
     def __init__(self, rows=6, columns=7):
         self.board = np.zeros((rows, columns), dtype=float)
+        self.history = np.zeros((rows, columns), dtype=int)
         self.playing = True
         self.plays = 0
         self.full = False
@@ -25,18 +26,18 @@ class Board():
 
     def __repr__(self):
         print()
-        print('-------------------------------')
-        print(f'-----------{bcolors.HEADER}THE BOARD{bcolors.ENDC}-----------')
-        print('-------------------------------')
-        for j in self.board:
+        print('---------------------------------------')
+        print(f'---------------{bcolors.HEADER}THE BOARD{bcolors.ENDC}---------------')
+        print('---------------------------------------')
+        for row, i in enumerate(self.board):
             print(' |', end=' ')
-            for i in j:
-                value = f'{bcolors.OKBLUE}O {bcolors.ENDC}' \
-                    if i == 1 else f'{bcolors.RED}X {bcolors.ENDC}' \
-                    if i == -1 else f'{bcolors.GRAY}_ {bcolors.ENDC}'
+            for col, p in enumerate(i):
+                value = f'{bcolors.OKBLUE}{self.history[row, col]:02d} {bcolors.ENDC}' \
+                    if p == 1 else f'{bcolors.RED}{self.history[row, col]:02d} {bcolors.ENDC}' \
+                    if p == -1 else f'{bcolors.GRAY}__ {bcolors.ENDC}'
                 print(f'{value}|', end=' ')
             print()
-        print('---1---2---3---4---5---6---7---')
+        print('----1----2----3----4----5----6----7----')
         return ''
 
     @property
@@ -51,6 +52,7 @@ class Board():
             pos = self.find_free_spot(col)
             self.board[pos, col] = float(player)
             self.plays += 1
+            self.history[pos, col] = self.plays
             if self.plays == self.board.shape[0] * self.board.shape[1]:
                 self.full = True
                 self.playing = False
