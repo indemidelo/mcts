@@ -55,7 +55,7 @@ class Game(object):
             row1, row2 = list(), list()
             for i in j:
                 row1.append(float(i == 1))
-                row2.append(float(i == 2))
+                row2.append(float(i == -1))
             p1board.append(row1)
             p2board.append(row2)
         return p1board, p2board
