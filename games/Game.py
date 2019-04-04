@@ -70,4 +70,4 @@ class Game(object):
         else:
             game_matrix = np.array(
                 (p2board, p1board, player_matrix))
-        return game_matrix.reshape((1, self.rows, self.columns, 3))
+        return np.array([game_matrix])

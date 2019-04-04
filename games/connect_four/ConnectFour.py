@@ -8,7 +8,7 @@ class ConnectFour(Game):
 
     @staticmethod
     def input_shape():
-        return [6, 7, 3]
+        return [3, 6, 7]
 
     @staticmethod
     def policy_shape():
