@@ -58,7 +58,7 @@ class Training:
         wins = 0
         num_eval_games = CFG.num_eval_games
         for j in range(CFG.num_eval_games):
-            match = OrganizedMatch(self.game(), ai_new, ai_old)
+            match = OrganizedMatch(self.game, ai_new, ai_old)
             winner = match.play_a_game()
             print(f'Match {j + 1} won by {winner}')
             if winner == 'new':

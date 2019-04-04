@@ -2,44 +2,48 @@ import random
 
 
 class OrganizedMatch():
-    def __init__(self, board, player_one, player_two):
+    def __init__(self, game, player_one, player_two):
         """
         A game between two players
-        :param board:
+        :param game:
         :param player_one:
         :param player_two:
         """
-        self.board = board
+        self.game = game
         p1color = random.choice([1, -1])
         self.players = {p1color: player_one,
                         -p1color: player_two}
+        print(f'{self.players[1].player_name} plays as Blue\n'
+              f'{self.players[-1].player_name} plays as Red\n'
+              f'Blue starts')
 
     def play_a_game(self, print_board=False):
         """ To play a game """
         player_color = 1
+        g = self.game()
         if print_board:
-            print(self.board)
-        while self.board.playing and not self.board.full:
+            print(g)
+        while g.playing:
             player = self.players[player_color]
-            player.play(self.board, player_color)
+            player.play(g, player_color)
             if print_board:
-                print(f'Player {player_color} move')
-                print(self.board)
+                print(g)
             player_color = -player_color
-        # return the winning player
-        if self.board.winner:
-            return self.players[self.board.winner].player_name
+        if g.winner:
+            winner = self.players[g.winner].player_name
+            print(f'{winner} won')
+            return winner
         return None
 
 
 if __name__ == '__main__':
-    from games.connect_four.ConnectFour import Board
+    from games.tic_tac_toe.TicTacToe import TicTacToe
     from src.HumanPlayer import HumanPlayer
     from src.MCTS import SimulatedGame
     from src.NeuralNetwork import NeuralNetwork
-    b = Board()
-    ai = SimulatedGame(NeuralNetwork(), player_name='ai')
+    # ai = SimulatedGame(NeuralNetwork(TicTacToe), player_name='ai')
     # ai.nn.load_model('../models/prova_iter_50.ckpt')
-    human = HumanPlayer('pippo')
-    OrganizedMatch(b, ai, human).play_a_game(True)
+    human = HumanPlayer('Castor')
+    human2 = HumanPlayer('Pollux')
+    OrganizedMatch(TicTacToe, human2, human).play_a_game(True)
 

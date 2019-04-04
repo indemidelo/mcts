@@ -1,27 +1,20 @@
 class HumanPlayer():
     def __init__(self, name):
-        self.name = name
+        self.player_name = name
 
-    def play(self, board, color):
-        board.play_(color, self.human_move(board))
+    def play(self, game, color):
+        game.play_(color, self.human_move(game))
 
-    def search_available_moves(self, board):
-        av_moves = list()
-        for j in range(board.board.shape[1]):
-            if 0 in board.board[:, j]:
-                av_moves.append(j)
-        return av_moves
-
-    def human_move(self, board):
-        available_moves = self.search_available_moves(board)
+    def human_move(self, game):
+        available_moves = game.list_available_moves()
         if not available_moves:
             return -1
         try:
-            col = int(input('Your move:')) - 1
+            col = int(input(f'{self.player_name} move:')) - 1
         except:
             print('Invalid move! Column not found')
-            return self.human_move(board)
+            return self.human_move(game)
         if col in available_moves:
             return col
         print('Invalid move! The column is full')
-        return self.human_move(board)
+        return self.human_move(game)

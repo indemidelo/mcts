@@ -1,10 +1,15 @@
 from src.train import Training
-from games.connect_four.ConnectFour import ConnectFour
+from config import CFG
 
 if __name__ == '__main__':
     # Training
     print('Neural Network Training')
-    game = ConnectFour
+    if CFG.game == 1:
+        from games.tic_tac_toe.TicTacToe import TicTacToe
+        game = TicTacToe
+    else:
+        from games.connect_four.ConnectFour import ConnectFour
+        game = ConnectFour
     t = Training(game)
     t.train()
 

@@ -40,7 +40,7 @@ def ResidualTower(input, regularizer, n_blocks):
     return res
 
 
-def AlphaGo19Net(inputs, pi, z):
+def AlphaGo19Net(inputs, outputs, pi, z):
     # Regularizer
     regularizer = keras.regularizers.l2(0.1)
 
@@ -77,7 +77,7 @@ def AlphaGo19Net(inputs, pi, z):
     with tf.name_scope('PolicyHead'):
         relu4 = keras.layers.Flatten()(relu4)
         fc1 = keras.layers.Dense(
-            units=7,
+            units=outputs,
             kernel_regularizer=regularizer
         )(relu4)
         pred_policy = keras.layers.Activation('softmax')(fc1)
