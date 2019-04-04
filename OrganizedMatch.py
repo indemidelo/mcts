@@ -2,7 +2,7 @@ import random
 
 
 class OrganizedMatch():
-    def __init__(self, game, player_one, player_two):
+    def __init__(self, game, player_one, player_two, verbose=False):
         """
         A game between two players
         :param game:
@@ -13,9 +13,10 @@ class OrganizedMatch():
         p1color = random.choice([1, -1])
         self.players = {p1color: player_one,
                         -p1color: player_two}
-        print(f'{self.players[1].player_name} plays as Blue\n'
-              f'{self.players[-1].player_name} plays as Red\n'
-              f'Blue starts')
+        if verbose:
+            print(f'{self.players[1].player_name} plays as Blue\n'
+                  f'{self.players[-1].player_name} plays as Red\n'
+                  f'Blue starts')
 
     def play_a_game(self, print_board=False):
         """ To play a game """

@@ -16,21 +16,23 @@ class Training:
         self.net = NeuralNetwork(game)
         self.eval_net = NeuralNetwork(game)
         self.p1, self.p2 = Player(1), Player(2)
+        self.init_train_data()
         if model_name:
             self.net.load_model(model_name)
+
+    def init_train_data(self):
+        self.train_data = {'state': [], 'pi': [], 'z': []}
 
     def train(self):
 
         for i in range(CFG.num_iterations):
-
-            training_data = {'state': [], 'pi': [], 'z': []}
 
             mean_el = 0
             for g in range(CFG.num_games):
                 start_time = time.time()
                 simgame = SimulatedGame(self.net, g + i * CFG.num_iterations)
                 training_data_loop = simgame.play_a_game()
-                self.update_training_data_(training_data, training_data_loop)
+                self.update_training_data_(training_data_loop)
                 elapsed = time.time() - start_time
                 mean_el += elapsed / CFG.num_games
                 print(f'Game {g + 1} in iter {i + 1} '
@@ -38,7 +40,8 @@ class Training:
                       f' - elapsed: {round(elapsed, 2)}s')
             print(f'Mean elapsed time for one iteration = {round(mean_el, 2)}')
 
-            self.net.train(*self.prepare_data(training_data))
+            print('Data used for training: ', len(self.train_data['state']))
+            self.net.train(*self.prepare_data())
             self.test()
 
             if i == 0:
@@ -72,31 +75,36 @@ class Training:
                   f' network age={self.net.age}')
             self.net.save_model(f'{CFG.model_directory}old/old_nn')
             self.eval_net.load_model(f'{CFG.model_directory}old/old_nn')
+            self.init_train_data()
         elif num_eval_games:
             print(f'Weaker network trained :( WR='
                   f'{round(wins / num_eval_games, 2)}'
                   f' network age={self.net.age}')
             self.net.load_model(f'{CFG.model_directory}old/old_nn')
+            if CFG.data_waste:
+                self.init_train_data()
         else:
             print('All draws! No update :('
                   f' network age={self.net.age}')
             self.net.load_model(f'{CFG.model_directory}/old/old_nn')
+            if CFG.data_waste:
+                self.init_train_data()
 
     def test(self, model_filename=None):
         if model_filename:
             self.net.load_model(model_filename)
         SimulatedGame(self.net).play_a_game(print_board=True)
 
-    def update_training_data_(self, data, data_loop):
-        data['state'] += data_loop['state']
-        data['pi'] += data_loop['pi']
-        data['z'] += data_loop['z']
+    def update_training_data_(self, data_loop):
+        self.train_data['state'] += data_loop['state']
+        self.train_data['pi'] += data_loop['pi']
+        self.train_data['z'] += data_loop['z']
 
-    def prepare_data(self, raw_data):
+    def prepare_data(self):
         input_data = self.create_batches(
-            np.array(raw_data['state']).reshape([-1] + self.game.input_shape()))
-        output_data_pi = self.create_batches(np.array(raw_data['pi']))
-        output_data_z = self.create_batches(np.array(raw_data['z']).reshape((-1, 1)))
+            np.array(self.train_data['state']).reshape([-1] + self.game.input_shape()))
+        output_data_pi = self.create_batches(np.array(self.train_data['pi']))
+        output_data_z = self.create_batches(np.array(self.train_data['z']).reshape((-1, 1)))
         return input_data, output_data_pi, output_data_z
 
     def create_batches(self, data):

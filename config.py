@@ -56,5 +56,6 @@ class CFG(object):
     resnet_blocks = 5
     record_loss = 1
     loss_file = "loss.txt"
-    game = 2
+    game = 1
     checkpoint = 1#50
+    data_waste = True
