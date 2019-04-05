@@ -10,6 +10,7 @@ def ResidualBlock(input, regularizer):
         kernel_size=[3, 3],
         padding='same',
         strides=1,
+        data_format='channels_first',
         kernel_regularizer=regularizer
     )(input)
     # Batch normalization #1
@@ -22,6 +23,7 @@ def ResidualBlock(input, regularizer):
         kernel_size=[3, 3],
         padding='same',
         strides=1,
+        data_format='channels_first',
         kernel_regularizer=regularizer
     )(relu1)
     # Batch normalization #2
@@ -51,6 +53,7 @@ def AlphaGo19Net(inputs, outputs, pi, z):
         kernel_size=[3, 3],
         padding='same',
         strides=1,
+        data_format='channels_first',
         kernel_regularizer=regularizer
     )(inputs)
     # Batch normalization layer #1
@@ -67,6 +70,7 @@ def AlphaGo19Net(inputs, outputs, pi, z):
         kernel_size=[1, 1],
         padding='same',
         strides=1,
+        data_format='channels_first',
         kernel_regularizer=regularizer
     )(tower)
     # Batch normalization layer #4
@@ -88,6 +92,7 @@ def AlphaGo19Net(inputs, outputs, pi, z):
         filters=1,
         kernel_size=[1, 1],
         strides=1,
+        data_format='channels_first',
         kernel_regularizer=regularizer
     )(tower)
     # Batch normalization #5

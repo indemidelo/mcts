@@ -84,11 +84,11 @@ class Training:
             if CFG.data_waste:
                 self.init_train_data()
         else:
-            print('All draws! No update :('
+            print('All draws! Force update :/'
                   f' network age={self.net.age}')
-            self.net.load_model(f'{CFG.model_directory}/old/old_nn')
-            if CFG.data_waste:
-                self.init_train_data()
+            self.net.save_model(f'{CFG.model_directory}old/old_nn')
+            self.eval_net.load_model(f'{CFG.model_directory}old/old_nn')
+            self.init_train_data()
 
     def test(self, model_filename=None):
         if model_filename:
