@@ -65,9 +65,6 @@ class Game(object):
         player_matrix = np.zeros((self.rows, self.columns))
         if player == 1:
             player_matrix += 1
-            game_matrix = np.array(
-                (p1board, p2board, player_matrix))
-        else:
-            game_matrix = np.array(
-                (p2board, p1board, player_matrix))
+        game_matrix = np.array(
+            (p1board, p2board, player_matrix))
         return np.array([game_matrix])
