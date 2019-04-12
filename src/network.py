@@ -6,7 +6,7 @@ from config import CFG
 def ResidualBlock(input, regularizer):
     # Convolutional layer #1
     conv1 = keras.layers.Conv2D(
-        filters=236,
+        filters=CFG.num_filters,
         kernel_size=[3, 3],
         padding='same',
         strides=1,
@@ -19,7 +19,7 @@ def ResidualBlock(input, regularizer):
     relu1 = keras.layers.Activation('relu')(batchnorm1)
     # Convolutional layer #2
     conv2 = keras.layers.Conv2D(
-        filters=236,
+        filters=CFG.num_filters,
         kernel_size=[3, 3],
         padding='same',
         strides=1,
@@ -49,7 +49,7 @@ def AlphaGo19Net(inputs, outputs, pi, z):
     ### Body
     # Convolutional layer #1
     conv1 = keras.layers.Conv2D(
-        filters=236,
+        filters=CFG.num_filters,
         kernel_size=[3, 3],
         padding='same',
         strides=1,
@@ -102,7 +102,7 @@ def AlphaGo19Net(inputs, outputs, pi, z):
     # Fully connected layer #2
     relu5 = keras.layers.Flatten()(relu5)
     fc2 = keras.layers.Dense(
-        units=256,
+        units=CFG.num_filters,
         kernel_regularizer=regularizer
     )(relu5)
     # ReLU #6
