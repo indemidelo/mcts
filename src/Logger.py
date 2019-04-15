@@ -5,10 +5,18 @@ from config import CFG
 class Logger():
     def __init__(self):
         self.saved_states = {'state': list(), 'pi': list(), 'z': list()}
+        self.pi_log = open('pi_log.txt', 'a')
+        self.v_log = open('v_log.txt', 'a')
 
     def log_single_move(self, state, pi):
         self.saved_states['state'].append(state)
         self.saved_states['pi'].append(pi)
+
+    def log_pi(self, pi, board_hash):
+        self.pi_log.write(f'{pi};{board_hash}\n')
+
+    def log_v(self, v, board_hash):
+        self.v_log.write(f'{v};{board_hash}\n')
 
     def log_results(self, winner):
         for state in self.saved_states['state']:

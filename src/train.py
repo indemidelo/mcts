@@ -73,6 +73,8 @@ class Training:
             print(f'Stronger network trained :) WR='
                   f'{round(wins / num_eval_games, 2)}'
                   f' network age={self.net.age}')
+            self.game.logger.log_v('stronger', 'network trained')
+            self.game.logger.log_pi('stronger', 'network trained')
             self.net.save_model(f'{CFG.model_directory}old/old_nn')
             self.eval_net.load_model(f'{CFG.model_directory}old/old_nn')
             self.init_train_data()

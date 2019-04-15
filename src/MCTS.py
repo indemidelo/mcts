@@ -44,6 +44,8 @@ class SimulatedGame():
             leaf = self.traverse_to_leaf()
             if leaf.board.playing:
                 p, v = self.nn.eval(leaf)
+                self.logger.log_pi(p, leaf.board.hash)
+                self.logger.log_v(v, leaf.board.hash)
                 self.expand_leaf_(leaf, p)
             else:
                 v = leaf.board.reward
