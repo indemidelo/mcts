@@ -42,17 +42,15 @@ class Training:
 
             print('Data used for training: ', len(self.train_data['state']))
             self.net.train(*self.prepare_data())
-            self.test()
+            # self.test()
 
-            if i == 0:
-                self.net.save_model(f'{CFG.model_directory}old/old_nn')
-                self.eval_net.load_model(f'{CFG.model_directory}old/old_nn')
+            self.init_train_data()
 
-            elif (i + 1) % CFG.checkpoint == 0:
-                filename = f'{CFG.model_directory}prova_{date}_iter_{i + 1}.ckpt'
-                self.eval_networks_()
-                self.net.save_model(filename)
-                self.net.load_model(filename)
+            # elif (i + 1) % CFG.checkpoint == 0:
+            #     filename = f'{CFG.model_directory}prova_{date}_iter_{i + 1}.ckpt'
+            #     self.eval_networks_()
+            #     self.net.save_model(filename)
+            #     self.net.load_model(filename)
 
     def eval_networks_(self):
         print('Networks evaluation')
@@ -73,8 +71,8 @@ class Training:
             print(f'Stronger network trained :) WR='
                   f'{round(wins / num_eval_games, 2)}'
                   f' network age={self.net.age}')
-            self.game.logger.log_v('stronger', 'network trained')
-            self.game.logger.log_pi('stronger', 'network trained')
+            ai_new.logger.log_v('stronger', 'network trained')
+            ai_new.logger.log_pi('stronger', 'network trained')
             self.net.save_model(f'{CFG.model_directory}old/old_nn')
             self.eval_net.load_model(f'{CFG.model_directory}old/old_nn')
             self.init_train_data()
@@ -106,7 +104,7 @@ class Training:
         input_data = self.create_batches(
             np.array(self.train_data['state']).reshape([-1] + self.game.input_shape()))
         output_data_pi = self.create_batches(np.array(self.train_data['pi']))
-        output_data_z = self.create_batches(np.array(self.train_data['z']).reshape((-1, 1)))
+        output_data_z = self.create_batches(np.array(self.train_data['z']))
         return input_data, output_data_pi, output_data_z
 
     def create_batches(self, data):

@@ -114,6 +114,8 @@ def AlphaGo19Net(inputs, outputs, pi, z):
     )(relu6)
     # Tanh activator
     pred_value = keras.layers.Activation('tanh')(fc_output)
+    # Reshape predicted value
+    pred_value = tf.reshape(pred_value, shape=[-1, ])
 
     # Collect all regularization losses
     regularization_losses = tf.get_collection(

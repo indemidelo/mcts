@@ -16,7 +16,7 @@ class NeuralNetwork(object):
         with self.graph.as_default():
             self.inputs = tf.placeholder(tf.float32, [None] + self.game.input_shape())
             self.pi = tf.placeholder(tf.float32, [None, self.game.policy_shape()])
-            self.z = tf.placeholder(tf.float32, [None, 1])
+            self.z = tf.placeholder(tf.float32, [None])
             self.pred_policy, self.pred_value, self.loss, self.optimizer, \
             self.loss_policy, self.loss_value = AlphaGo19Net(
                 self.inputs, self.game.policy_shape(), self.pi, self.z)
@@ -28,7 +28,7 @@ class NeuralNetwork(object):
         board = state.board.board_as_tensor(state.player_color)
         p, v = self.sess.run([self.pred_policy, self.pred_value],
                              feed_dict={self.inputs: board})
-        return p[0], v[0][0]
+        return p[0], v[0]
 
     def train(self, input_data, output_data_pi, output_data_z):
         for epoch in range(CFG.epochs):

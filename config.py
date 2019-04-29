@@ -1,3 +1,4 @@
+import time
 """Class to represent a configuration file."""
 
 
@@ -60,3 +61,4 @@ class CFG(object):
     game = 2
     checkpoint = 1#50
     data_waste = False
+    ts_log = round(time.time())

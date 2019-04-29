@@ -5,8 +5,8 @@ from config import CFG
 class Logger():
     def __init__(self):
         self.saved_states = {'state': list(), 'pi': list(), 'z': list()}
-        self.pi_log = open('pi_log.txt', 'a')
-        self.v_log = open('v_log.txt', 'a')
+        self.pi_log = open(f'{CFG.ts_log}_pi_log.txt', 'a')
+        self.v_log = open(f'{CFG.ts_log}_v_log.txt', 'a')
 
     def log_single_move(self, state, pi):
         self.saved_states['state'].append(state)

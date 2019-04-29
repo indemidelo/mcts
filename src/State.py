@@ -22,18 +22,16 @@ class State():
         self.U = 0
         self.Q = float('inf')
         self.n = 0
+        self.gain = self.Q + self.U
 
     def __str__(self):
         return str(f'p: {self.player_color} - '
                    f'a: {self.action} - n: {self.n} - '
                    f'gain: {self.gain}')
 
-    @property
-    def gain(self):
-        return self.Q + self.U
-
     def update(self, v, n_all):
         self.n += 1
         self.W += v
         self.U = CFG.c_puct * self.p * sqrt(n_all) / (self.n + 1)
         self.Q = self.W / self.n
+        self.gain = self.Q + self.U
