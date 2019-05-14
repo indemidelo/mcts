@@ -35,8 +35,8 @@ class Logger():
         :return: (dict)
         """
         raw_data = {'state': list(), 'pi': list(), 'z': list()}
-        if winner is None:
-            return raw_data
+        # if winner is None:
+        #     return raw_data
         self.log_results(winner)
         n_states = len(self.saved_states['state'])
         indices = random.sample(

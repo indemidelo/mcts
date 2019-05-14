@@ -4,10 +4,13 @@ from datetime import datetime
 from config import CFG
 from src.MCTS import SimulatedGame
 from src.Player import Player
-from src.NeuralNetwork import NeuralNetwork
 from OrganizedMatch import OrganizedMatch
 
 date = datetime.now().strftime("%y%m%d")
+if CFG.framework == 'pytorch':
+    from src.pytorch.NeuralNetwork import NeuralNetwork
+elif CFG.framework == 'tensorflow':
+    from src.tensorflow.NeuralNetwork import NeuralNetwork
 
 
 class Training:

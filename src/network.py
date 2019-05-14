@@ -3,15 +3,14 @@ from tensorflow import keras
 from config import CFG
 
 
-def ResidualBlock(input, regularizer):
+def ResidualBlock(input):
     # Convolutional layer #1
     conv1 = keras.layers.Conv2D(
         filters=CFG.num_filters,
         kernel_size=[3, 3],
         padding='same',
         strides=1,
-        data_format='channels_first',
-        kernel_regularizer=regularizer
+        data_format='channels_first'
     )(input)
     # Batch normalization #1
     batchnorm1 = keras.layers.BatchNormalization()(conv1)
@@ -23,8 +22,7 @@ def ResidualBlock(input, regularizer):
         kernel_size=[3, 3],
         padding='same',
         strides=1,
-        data_format='channels_first',
-        kernel_regularizer=regularizer
+        data_format='channels_first'
     )(relu1)
     # Batch normalization #2
     batchnorm2 = keras.layers.BatchNormalization()(conv2)
@@ -35,16 +33,14 @@ def ResidualBlock(input, regularizer):
     return relu2
 
 
-def ResidualTower(input, regularizer, n_blocks):
+def ResidualTower(input, n_blocks):
     res = input
     for _ in range(n_blocks):
-        res = ResidualBlock(res, regularizer)
+        res = ResidualBlock(res)
     return res
 
 
 def AlphaGo19Net(inputs, outputs, pi, z):
-    # Regularizer
-    regularizer = keras.regularizers.l2(0.1)
 
     ### Body
     # Convolutional layer #1
@@ -53,15 +49,14 @@ def AlphaGo19Net(inputs, outputs, pi, z):
         kernel_size=[3, 3],
         padding='same',
         strides=1,
-        data_format='channels_first',
-        kernel_regularizer=regularizer
+        data_format='channels_first'
     )(inputs)
     # Batch normalization layer #1
     batchnorm1 = keras.layers.BatchNormalization()(conv1)
     # ReLU layer #1
     relu2 = keras.layers.Activation('relu')(batchnorm1)
     # Tower of residual blocks
-    tower = ResidualTower(relu2, regularizer, CFG.resnet_blocks)
+    tower = ResidualTower(relu2, CFG.resnet_blocks)
 
     ### Policy head
     # Convolutional layer #3
@@ -70,8 +65,7 @@ def AlphaGo19Net(inputs, outputs, pi, z):
         kernel_size=[1, 1],
         padding='same',
         strides=1,
-        data_format='channels_first',
-        kernel_regularizer=regularizer
+        data_format='channels_first'
     )(tower)
     # Batch normalization layer #4
     batchnorm4 = keras.layers.BatchNormalization()(conv3)
@@ -80,10 +74,7 @@ def AlphaGo19Net(inputs, outputs, pi, z):
     # Fully connected layer #1
     with tf.name_scope('PolicyHead'):
         relu4 = keras.layers.Flatten()(relu4)
-        fc1 = keras.layers.Dense(
-            units=outputs,
-            kernel_regularizer=regularizer
-        )(relu4)
+        fc1 = keras.layers.Dense(units=outputs)(relu4)
         pred_policy = keras.layers.Activation('softmax')(fc1)
 
     ### Value Head
@@ -92,8 +83,7 @@ def AlphaGo19Net(inputs, outputs, pi, z):
         filters=1,
         kernel_size=[1, 1],
         strides=1,
-        data_format='channels_first',
-        kernel_regularizer=regularizer
+        data_format='channels_first'
     )(tower)
     # Batch normalization #5
     batchnorm5 = keras.layers.BatchNormalization()(conv4)
@@ -101,37 +91,22 @@ def AlphaGo19Net(inputs, outputs, pi, z):
     relu5 = keras.layers.Activation('relu')(batchnorm5)
     # Fully connected layer #2
     relu5 = keras.layers.Flatten()(relu5)
-    fc2 = keras.layers.Dense(
-        units=CFG.num_filters,
-        kernel_regularizer=regularizer
-    )(relu5)
+    fc2 = keras.layers.Dense(units=CFG.num_filters)(relu5)
     # ReLU #6
     relu6 = keras.layers.Activation('relu')(fc2)
     # Fully connected layer #3
-    fc_output = keras.layers.Dense(
-        units=1,
-        kernel_regularizer=regularizer
-    )(relu6)
+    fc_output = keras.layers.Dense(units=1)(relu6)
     # Tanh activator
     pred_value = keras.layers.Activation('tanh')(fc_output)
     # Reshape predicted value
     pred_value = tf.reshape(pred_value, shape=[-1, ])
 
-    # Collect all regularization losses
-    regularization_losses = tf.get_collection(
-        tf.GraphKeys.REGULARIZATION_LOSSES)
-
     ### Loss
     with tf.name_scope('Loss'):
-        # loss_value = tf.reshape(tf.squared_difference(z, pred_value), (-1,))
         loss_value = tf.losses.mean_squared_error(z, pred_value)
-        # loss_policy = tf.reduce_mean(tf.multiply(pi, tf.math.log(1e-6 + pred_policy)), axis=1)
-        # loss_policy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(labels=pi, logits=fc1))
         loss_policy = tf.losses.softmax_cross_entropy(pi, pred_policy)
-        # loss_policy = tf.reduce_sum(tf.multiply(pi, tf.math.log(pred_policy)), axis=1)
-        regularization = CFG.l2_val * tf.reduce_sum(regularization_losses)
-        # loss = 0.1 * loss_value + 0.9 * loss_policy + regularization
-        loss = loss_value + loss_policy + regularization
+        # loss = 0.1 * loss_value + 0.9 * loss_policy
+        loss = loss_value + loss_policy
 
     # Configure optimizer
     optimizer = tf.train.MomentumOptimizer(

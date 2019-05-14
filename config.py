@@ -33,19 +33,19 @@ class CFG(object):
         game: Number of the game. 0: Tic Tac Toe, 1: Othello, 2: Connect Four.
         checkpoint: Number of iteration between each model storing
     """
-    num_iterations = 4
-    num_games = 30
-    num_mcts_sims = 150
-    num_filters = 64
+    num_iterations = 20
+    num_games = 20
+    num_mcts_sims = 100
+    num_filters = 32
     train_split = 0.99
     c_puct = 1
     l2_val = 0.0001
     momentum = 0.9
-    learning_rate = 0.01
+    learning_rate = 0.001
     t_policy_val = 0.0001
     temp_init = 1
     temp_final = 0.001
-    temp_thresh = 20
+    temp_thresh = 10
     epochs = 25
     batch_size = 256
     dirichlet_alpha = 0.3
@@ -62,3 +62,4 @@ class CFG(object):
     checkpoint = 1#50
     data_waste = False
     ts_log = round(time.time())
+    framework = 'pytorch'
