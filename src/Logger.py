@@ -1,16 +1,29 @@
 import random
+import re
 from config import CFG
 
 
 class Logger():
     def __init__(self):
+        # self.log_parameters()
         self.saved_states = {'state': list(), 'pi': list(), 'z': list()}
         self.pi_log = open(f'{CFG.ts_log}_pi_log.txt', 'a')
         self.v_log = open(f'{CFG.ts_log}_v_log.txt', 'a')
 
+    def log_parameters(self):
+        with open(f'{CFG.ts_log}_parameters.csv', 'w') as csvfile:
+            csvfile.write(f'name;value\n')
+            for k, v  in CFG.__dict__.items():
+                if not re.search('^__\S*__$', k):
+                    csvfile.write(f'{k};{v}\n')
+
     def log_single_move(self, state, pi):
         self.saved_states['state'].append(state)
         self.saved_states['pi'].append(pi)
+
+    def log_variables(self, pi, v, board_hash):
+        self.log_pi(pi, board_hash)
+        self.log_v(v, board_hash)
 
     def log_pi(self, pi, board_hash):
         self.pi_log.write(f'{pi};{board_hash}\n')
