@@ -68,7 +68,7 @@ class PolicyHead(nn.Module):
         self.bn1 = nn.BatchNorm2d(2)
         self.relu = nn.ReLU(inplace=True)
         self.linear = nn.Linear(2 * 6 * 7, num_classes)
-        self.softmax = nn.Softmax()
+        self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
         out = self.conv1(x)
@@ -118,7 +118,7 @@ class AlphaGoNet(nn.Module):
         return policy, value
 
 
-class AlphaLoss(torch.nn.Module):
+class AlphaLoss(nn.Module):
     """
     Custom loss as defined in the paper :
     (z - v) ** 2 --> MSE Loss

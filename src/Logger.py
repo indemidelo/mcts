@@ -57,7 +57,7 @@ class Logger():
         for ind in indices:
             state = self.saved_states['state'][ind]
             player = state.player_color
-            raw_data['state'].append(state.board.board_as_tensor(player))
+            raw_data['state'].append(state.board.board_repr(player))
             raw_data['pi'].append(list(self.saved_states['pi'][ind].values()))
             raw_data['z'].append(self.saved_states['z'][ind])
         self.saved_states = {'state': list(), 'pi': list(), 'z': list()}

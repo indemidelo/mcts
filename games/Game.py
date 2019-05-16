@@ -60,7 +60,16 @@ class Game(object):
             p2board.append(row2)
         return p1board, p2board
 
-    def board_as_tensor(self, player):
+    def board_repr(self, player):
+        """
+        Format the board in the AlphaZero layout:
+        1st layer = Player one
+        2nd layer = Player two
+        3rd layer = matrix of ones if P1 is the active player,
+                    zeroes if P2 is the active player
+        :param player: id of the active player
+        :return: arrays with board representation
+        """
         p1board, p2board = self.input_data_board()
         player_matrix = np.zeros((self.rows, self.columns))
         if player == 1:

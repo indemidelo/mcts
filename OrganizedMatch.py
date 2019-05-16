@@ -38,13 +38,14 @@ class OrganizedMatch():
 
 
 if __name__ == '__main__':
-    from games.tic_tac_toe.TicTacToe import TicTacToe
+    from games.connect_four.ConnectFour import ConnectFour
     from src.HumanPlayer import HumanPlayer
     from src.MCTS import SimulatedGame
-    from src.NeuralNetwork import NeuralNetwork
-    # ai = SimulatedGame(NeuralNetwork(TicTacToe), player_name='ai')
-    # ai.nn.load_model('../models/prova_iter_50.ckpt')
+    from src.tensorflow.NeuralNetwork import NeuralNetwork
+    game = ConnectFour
+    ai = SimulatedGame(NeuralNetwork(game), player_name='ai')
+    ai.nn.load_model('models/backup/12apr/prova_190412_iter_167.ckpt')
     human = HumanPlayer('Castor')
-    human2 = HumanPlayer('Pollux')
-    OrganizedMatch(TicTacToe, human2, human).play_a_game(True)
+    # human2 = HumanPlayer('Pollux')
+    OrganizedMatch(game, ai, human).play_a_game(True)
 
