@@ -13,9 +13,7 @@ class NeuralNetwork(object):
             self.load_model(model_name)
 
     def session_initialize(self):
-        in_channels = self.game.input_shape()[0]
-        num_moves = self.game.policy_shape()
-        self.net = AlphaGoNet(in_channels, num_moves)
+        self.net = AlphaGoNet(self.game)
 
         if CFG.gpu_train:
             self.net.cuda()
@@ -26,7 +24,9 @@ class NeuralNetwork(object):
 
     def eval(self, state):
         board = state.board.board_repr(state.player_color)
-        p, v = to_array(*self.net(to_tensor(board)))
+        board = to_tensor(board)
+        p, v = self.net(board)
+        p, v = to_array(p, v)
         return p[0], v[0][0]
 
     def train(self, input_data, output_data_pi, output_data_z):

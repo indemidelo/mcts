@@ -32,15 +32,19 @@ class ResidualBlock(nn.Module):
         return out
 
 
-class ResNet(nn.Module):
-    def __init__(self, block):
-        super(ResNet, self).__init__()
-        self.resblock = block(CFG.num_filters, CFG.num_filters)
+class ResidualTower(nn.Module):
+    def __init__(self):
+        super(ResidualTower, self).__init__()
+        self.tower = self.make_tower()
+
+    def make_tower(self):
+        layers = list()
+        for _ in range(CFG.resnet_blocks):
+            layers.append(ResidualBlock(CFG.num_filters, CFG.num_filters))
+        return nn.Sequential(*layers)
 
     def forward(self, x):
-        out = x
-        for _ in range(CFG.resnet_blocks):
-            out = self.resblock(out)
+        out = self.tower(x)
         return out
 
 
@@ -50,7 +54,7 @@ class Body(nn.Module):
         self.conv1 = conv3x3(in_channels, CFG.num_filters)
         self.bn1 = nn.BatchNorm2d(CFG.num_filters)
         self.relu = nn.ReLU(inplace=True)
-        self.tower = ResNet(ResidualBlock)
+        self.tower = ResidualTower()
 
     def forward(self, x):
         out = self.conv1(x)
@@ -61,13 +65,13 @@ class Body(nn.Module):
 
 
 class PolicyHead(nn.Module):
-    def __init__(self, num_classes):
+    def __init__(self, num_classes, w, h):
         super(PolicyHead, self).__init__()
         self.conv1 = conv3x3(
             CFG.num_filters, out_channels=2, kernel_size=1, padding=0)
         self.bn1 = nn.BatchNorm2d(2)
         self.relu = nn.ReLU(inplace=True)
-        self.linear = nn.Linear(2 * 6 * 7, num_classes)
+        self.linear = nn.Linear(2 * h * w, num_classes)
         self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
@@ -81,13 +85,13 @@ class PolicyHead(nn.Module):
 
 
 class ValueHead(nn.Module):
-    def __init__(self):
+    def __init__(self, h, w):
         super(ValueHead, self).__init__()
         self.conv1 = conv3x3(
             CFG.num_filters, out_channels=1, kernel_size=1, padding=0)
         self.bn1 = nn.BatchNorm2d(1)
         self.relu1 = nn.ReLU(inplace=True)
-        self.linear1 = nn.Linear(1 * 6 * 7, CFG.num_filters)
+        self.linear1 = nn.Linear(1 * h * w, CFG.num_filters)
         self.relu2 = nn.ReLU(inplace=True)
         self.linear2 = nn.Linear(CFG.num_filters, 1)
         self.tanh = nn.Tanh()
@@ -105,11 +109,13 @@ class ValueHead(nn.Module):
 
 
 class AlphaGoNet(nn.Module):
-    def __init__(self, in_channels, num_classes):
+    def __init__(self, game):
         super(AlphaGoNet, self).__init__()
-        self.body = Body(in_channels)
-        self.policy_head = PolicyHead(num_classes)
-        self.value_head = ValueHead()
+        in_ch, h, w = game.input_shape()
+        policy_len = game.policy_shape()
+        self.body = Body(in_ch)
+        self.policy_head = PolicyHead(policy_len, h, w)
+        self.value_head = ValueHead(h, w)
 
     def forward(self, x):
         out = self.body(x)
