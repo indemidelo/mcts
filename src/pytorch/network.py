@@ -40,7 +40,7 @@ class ResNet(nn.Module):
     def forward(self, x):
         out = x
         for _ in range(CFG.resnet_blocks):
-            out = self.resblock(x)
+            out = self.resblock(out)
         return out
 
 
