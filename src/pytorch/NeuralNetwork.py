@@ -3,8 +3,12 @@ import torch
 import torch.optim as optim
 from src.pytorch.network import AlphaGoNet, AlphaLoss
 
+device_gpu = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+device_cpu = torch.device('cpu')
+
 
 class NeuralNetwork(object):
+
     def __init__(self, game, model_name=None):
         self.game = game
         self.age = 0
@@ -36,8 +40,8 @@ class NeuralNetwork(object):
             self.optimizer.zero_grad()
 
             loss_policy_mean, loss_value_mean, loss_mean, j = .0, .0, .0, 0
-            for i, pi, z in zip(input_data, output_data_pi, output_data_z):
 
+            for i, pi, z in zip(input_data, output_data_pi, output_data_z):
                 i_t, pi_t, z_t = to_tensor(i, pi, z)
                 pred_pi, pred_z = self.net(i_t)
 
@@ -79,7 +83,7 @@ def to_tensor(*args):
         t = torch.from_numpy(array)
         t = t.to(dtype=torch.float)
         if CFG.gpu_train:
-            t = t.cuda()
+            t = t.to(device_gpu)
 
         tensors.append(t)
 
@@ -97,7 +101,8 @@ def to_array(*args):
     """
     arrays = list()
     for tensor in args:
-        arrays.append(tensor.cpu().detach().numpy())
+        t = tensor.to(device_cpu) if CFG.gpu_train else tensor
+        arrays.append(t.detach().numpy())
     if len(arrays) == 1:
         return arrays[0]
     return arrays
