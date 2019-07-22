@@ -37,12 +37,12 @@ class NeuralNetwork(object):
 
         for epoch in range(CFG.epochs):
 
-            self.optimizer.zero_grad()
-
             loss_policy_mean, loss_value_mean, loss_mean, j = .0, .0, .0, 0
 
             for i, pi, z in zip(input_data, output_data_pi, output_data_z):
                 i_t, pi_t, z_t = to_tensor(i, pi, z)
+
+                self.optimizer.zero_grad()
                 pred_pi, pred_z = self.net(i_t)
 
                 loss, loss_value, loss_policy = self.criterion(
