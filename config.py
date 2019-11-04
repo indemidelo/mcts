@@ -62,5 +62,5 @@ class CFG(object):
     checkpoint = 1#50
     data_waste = False
     ts_log = round(time.time())
-    framework = 'pytorch'
+    framework = 'tensorflow2'
     gpu_train = True

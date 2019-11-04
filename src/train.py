@@ -2,15 +2,18 @@ import numpy as np
 import time
 from datetime import datetime
 from config import CFG
+from importlib import import_module
 from src.MCTS import SimulatedGame
 from src.Player import Player
 from OrganizedMatch import OrganizedMatch
 
 date = datetime.now().strftime("%y%m%d")
-if CFG.framework == 'pytorch':
-    from src.pytorch.NeuralNetwork import NeuralNetwork
-elif CFG.framework == 'tensorflow':
-    from src.tensorflow.NeuralNetwork import NeuralNetwork
+
+try:
+    nn_module = import_module(f'src.{CFG.framework}.NeuralNetwork')
+    NeuralNetwork = nn_module.NeuralNetwork
+except Exception as err:
+    print(err)
 
 
 class Training:
