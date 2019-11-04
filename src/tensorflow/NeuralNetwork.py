@@ -1,6 +1,6 @@
 import tensorflow as tf
 from config import CFG
-from src.network import AlphaGo19Net
+from src.tensorflow.network import AlphaGo19Net
 
 
 class NeuralNetwork(object):
@@ -17,9 +17,11 @@ class NeuralNetwork(object):
             self.inputs = tf.placeholder(tf.float32, [None] + self.game.input_shape())
             self.pi = tf.placeholder(tf.float32, [None, self.game.policy_shape()])
             self.z = tf.placeholder(tf.float32, [None])
+            self.is_train = tf.placeholder(tf.bool, name='is_train')
             self.pred_policy, self.pred_value, self.loss, self.optimizer, \
             self.loss_policy, self.loss_value = AlphaGo19Net(
-                self.inputs, self.game.policy_shape(), self.pi, self.z)
+                self.inputs, self.game.policy_shape(), self.pi,
+                self.z, self.is_train)
             self.saver = tf.train.Saver(max_to_keep=None)
             self.sess = tf.Session()
             self.sess.run(tf.global_variables_initializer())
@@ -27,14 +29,16 @@ class NeuralNetwork(object):
     def eval(self, state):
         board = state.board.board_repr(state.player_color)
         p, v = self.sess.run([self.pred_policy, self.pred_value],
-                             feed_dict={self.inputs: board})
+                             feed_dict={self.inputs: board,
+                                        self.is_train: False})
         return p[0], v[0]
 
     def train(self, input_data, output_data_pi, output_data_z):
         for epoch in range(CFG.epochs):
             loss_policy_mean, loss_value_mean, loss_mean, j = 0, 0, 0, 0
             for i, pi, z in zip(input_data, output_data_pi, output_data_z):
-                feed_dict = {self.inputs: i, self.pi: pi, self.z: z}
+                feed_dict = {self.inputs: i, self.pi: pi,
+                             self.z: z, self.is_train: True}
                 _, c, loss_policy, loss_value = self.sess.run(
                     [self.optimizer, self.loss, self.loss_policy,
                      self.loss_value], feed_dict=feed_dict)

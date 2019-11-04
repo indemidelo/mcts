@@ -3,7 +3,7 @@ from tensorflow import keras
 from config import CFG
 
 
-def ResidualBlock(input):
+def ResidualBlock(input, is_train):
     # Convolutional layer #1
     conv1 = keras.layers.Conv2D(
         filters=CFG.num_filters,
@@ -13,7 +13,7 @@ def ResidualBlock(input):
         data_format='channels_first'
     )(input)
     # Batch normalization #1
-    batchnorm1 = keras.layers.BatchNormalization()(conv1)
+    batchnorm1 = keras.layers.BatchNormalization(axis=1)(conv1, training=is_train)
     # ReLU #1
     relu1 = keras.layers.Activation('relu')(batchnorm1)
     # Convolutional layer #2
@@ -25,7 +25,7 @@ def ResidualBlock(input):
         data_format='channels_first'
     )(relu1)
     # Batch normalization #2
-    batchnorm2 = keras.layers.BatchNormalization()(conv2)
+    batchnorm2 = keras.layers.BatchNormalization(axis=1)(conv2, training=is_train)
     # Skip connection
     skip = tf.add(batchnorm2, input)
     # ReLU #2
@@ -33,14 +33,14 @@ def ResidualBlock(input):
     return relu2
 
 
-def ResidualTower(input, n_blocks):
+def ResidualTower(input, n_blocks, is_train):
     res = input
     for _ in range(n_blocks):
-        res = ResidualBlock(res)
+        res = ResidualBlock(res, is_train)
     return res
 
 
-def AlphaGo19Net(inputs, outputs, pi, z):
+def AlphaGo19Net(inputs, outputs, pi, z, is_train):
 
     ### Body
     # Convolutional layer #1
@@ -52,11 +52,11 @@ def AlphaGo19Net(inputs, outputs, pi, z):
         data_format='channels_first'
     )(inputs)
     # Batch normalization layer #1
-    batchnorm1 = keras.layers.BatchNormalization()(conv1)
+    batchnorm1 = keras.layers.BatchNormalization(axis=1)(conv1, training=is_train)
     # ReLU layer #1
     relu2 = keras.layers.Activation('relu')(batchnorm1)
     # Tower of residual blocks
-    tower = ResidualTower(relu2, CFG.resnet_blocks)
+    tower = ResidualTower(relu2, CFG.resnet_blocks, is_train)
 
     ### Policy head
     # Convolutional layer #3
@@ -68,7 +68,7 @@ def AlphaGo19Net(inputs, outputs, pi, z):
         data_format='channels_first'
     )(tower)
     # Batch normalization layer #4
-    batchnorm4 = keras.layers.BatchNormalization()(conv3)
+    batchnorm4 = keras.layers.BatchNormalization(axis=1)(conv3, training=is_train)
     # ReLU layer #4
     relu4 = keras.layers.Activation('relu')(batchnorm4)
     # Fully connected layer #1
@@ -86,7 +86,7 @@ def AlphaGo19Net(inputs, outputs, pi, z):
         data_format='channels_first'
     )(tower)
     # Batch normalization #5
-    batchnorm5 = keras.layers.BatchNormalization()(conv4)
+    batchnorm5 = keras.layers.BatchNormalization(axis=1)(conv4, training=is_train)
     # ReLU #5
     relu5 = keras.layers.Activation('relu')(batchnorm5)
     # Fully connected layer #2
