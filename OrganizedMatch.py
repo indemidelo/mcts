@@ -44,7 +44,7 @@ if __name__ == '__main__':
     from src.tensorflow.NeuralNetwork import NeuralNetwork
     game = ConnectFour
     ai = SimulatedGame(NeuralNetwork(game), player_name='ai')
-    ai.nn.load_model('models/backup/12apr/prova_190412_iter_167.ckpt')
+    ai.agent.load_model('models/backup/12apr/prova_190412_iter_167.ckpt')
     human = HumanPlayer('Castor')
     # human2 = HumanPlayer('Pollux')
     OrganizedMatch(game, ai, human).play_a_game(True)

@@ -37,7 +37,7 @@ class Training:
             for g in range(CFG.num_games):
                 start_time = time.time()
                 simgame = SimulatedGame(self.net, g + i * CFG.num_iterations)
-                training_data_loop = simgame.play_a_game()
+                training_data_loop = simgame.play_a_game(CFG.print_board)
                 self.update_training_data_(training_data_loop)
                 elapsed = time.time() - start_time
                 mean_el += elapsed / CFG.num_games

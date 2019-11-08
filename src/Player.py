@@ -5,3 +5,11 @@ class Player():
 
     def __repr__(self):
         return str(self.name)
+
+    def play(self, game, color):
+        game.play_(color, self.move(game))
+
+    # to be implemented
+    def move(self, game):
+        pass
+

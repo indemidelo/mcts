@@ -64,3 +64,5 @@ class CFG(object):
     ts_log = round(time.time())
     framework = 'tensorflow2'
     gpu_train = True
+    print_board = True
+    mode = 'pure_rl_test'

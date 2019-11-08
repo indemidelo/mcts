@@ -49,6 +49,9 @@ class Game(object):
     def game_over(self, *args):
         return
 
+    def remaining_moves(self):
+        return len([j for i in self.board for j in i if j == 0])
+
     def input_data_board(self):
         p1board, p2board = list(), list()
         for j in self.board:

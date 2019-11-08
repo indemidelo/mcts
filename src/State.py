@@ -3,13 +3,13 @@ from config import CFG
 
 
 class State():
-    def __init__(self, action, player_color, board, p, parent=None):
+    def __init__(self, action, player_color, board, prior, parent=None):
         """
         Node of the Monte Carlo Tree
         :param action: last action performed by -player_color
         :param player_color: the next player to make a move
         :param board: the board before player_color's move
-        :param p: prior probability
+        :param prior: prior probability
         :param parent: the parent state
         """
         self.action = action
@@ -17,7 +17,7 @@ class State():
         self.board = board
         self.children = list()
         self.parent = parent
-        self.p = p
+        self.prior = prior
         self.W = 0
         self.U = 0
         self.Q = float('inf')
@@ -32,6 +32,6 @@ class State():
     def update(self, v, n_all):
         self.n += 1
         self.W += v
-        self.U = CFG.c_puct * self.p * sqrt(n_all) / (self.n + 1)
+        self.U = CFG.c_puct * self.prior * sqrt(n_all) / (self.n + 1)
         self.Q = self.W / self.n
         self.gain = self.Q + self.U

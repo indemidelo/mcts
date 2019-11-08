@@ -1,5 +1,10 @@
 import tensorflow as tf
-from tensorflow.keras.layers import Dense, Flatten, Conv2D, Layer, BatchNormalization, ReLU
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Flatten
+from tensorflow.keras.layers import Conv2D
+from tensorflow.keras.layers import Layer
+from tensorflow.keras.layers import BatchNormalization
+from tensorflow.keras.layers import ReLU
 from tensorflow.keras import Model, Sequential
 from config import CFG
 
@@ -19,15 +24,15 @@ class ResidualBlock(Layer):
         self.bn2 = BatchNormalization()
         self.downsample = downsample
 
-    def call(self, x):
-        residual = x
-        out = self.conv1(x)
-        out = self.bn1(out)
+    def call(self, inputs, training=True):
+        residual = inputs
+        out = self.conv1(inputs)
+        out = self.bn1(out, training)
         out = self.relu(out)
         out = self.conv2(out)
-        out = self.bn2(out)
+        out = self.bn2(out, training)
         if self.downsample:
-            residual = self.downsample(x)
+            residual = self.downsample(inputs)
         out += residual
         out = self.relu(out)
         return out
@@ -44,8 +49,8 @@ class ResidualTower(Layer):
             layers.append(ResidualBlock(CFG.num_filters))
         return Sequential(layers)
 
-    def call(self, x):
-        out = self.tower(x)
+    def call(self, inputs, training=True):
+        out = self.tower(inputs, training)
         return out
 
 
@@ -57,9 +62,9 @@ class Body(Layer):
         self.relu = ReLU()
         self.tower = ResidualTower()
 
-    def call(self, x):
-        out = self.conv(x)
-        out = self.bn(out)
+    def call(self, inputs, training=True):
+        out = self.conv(inputs)
+        out = self.bn(out, training=training)
         out = self.relu(out)
         out = self.tower(out)
         return out
@@ -75,9 +80,9 @@ class PolicyHead(Layer):
         self.relu = ReLU()
         self.linear = Dense(num_classes, activation='softmax')
 
-    def call(self, x):
-        out = self.conv1(x)
-        out = self.bn(out)
+    def call(self, inputs, training=True):
+        out = self.conv1(inputs)
+        out = self.bn(out, training=training)
         out = self.flat(out)
         out = self.relu(out)
         # out = out.view(out.size(0), -1)
@@ -96,9 +101,9 @@ class ValueHead(Layer):
         self.linear1 = Dense(CFG.num_filters, activation='relu')
         self.linear2 = Dense(1, activation='tanh')
 
-    def call(self, x):
-        out = self.conv(x)
-        out = self.bn(out)
+    def call(self, inputs, training=True):
+        out = self.conv(inputs)
+        out = self.bn(out, training=training)
         out = self.flat(out)
         out = self.relu(out)
         # out = out.view(out.size(0), -1)
@@ -115,10 +120,10 @@ class AlphaGoNet(Model):
         self.policy_head = PolicyHead(policy_len)
         self.value_head = ValueHead()
 
-    def call(self, inputs):
-        out = self.body(inputs)
-        policy = self.policy_head(out)
-        value = self.value_head(out)
+    def call(self, inputs, training=True):
+        out = self.body(inputs, training)
+        policy = self.policy_head(out, training)
+        value = self.value_head(out, training)
         return policy, value
 
 

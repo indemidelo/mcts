@@ -7,12 +7,13 @@ from src.Logger import Logger
 
 
 class SimulatedGame():
-    def __init__(self, nn, temp_it=CFG.temp_thresh+1, player_name=None):
-        self.nn = nn
+    def __init__(self, agent, temp_it=CFG.temp_thresh+1, player_name=None):
+        self.agent = agent
+        self.game = self.agent.game
         self.logger = Logger()
         self.temp_it = temp_it
         self.player_name = player_name
-        self.tree = State(None, 1, self.nn.game(), p=1)
+        self.tree = State(None, 1, self.game(), prior=1.0)
 
     def play_a_game(self, print_board=False):
         while self.tree.board.playing:
@@ -34,7 +35,7 @@ class SimulatedGame():
         To play against an opponent
         :return:
         """
-        self.tree = State(None, player_color, board, p=1)
+        self.tree = State(None, player_color, board, prior=1.0)
         self.search_()
         next_state, _ = self.sample_move()
         board.play_(player_color, next_state.action)
@@ -43,8 +44,8 @@ class SimulatedGame():
         for j in range(CFG.num_mcts_sims):
             leaf = self.traverse_to_leaf()
             if leaf.board.playing:
-                p, v = self.nn.eval(leaf)
-                self.logger.log_variables(p, v, leaf.board.hash)
+                p, v = self.agent.eval(leaf)
+                # self.logger.log_variables(p, v, leaf.board.hash)
                 self.expand_leaf_(leaf, p)
             else:
                 v = leaf.board.reward
@@ -75,7 +76,7 @@ class SimulatedGame():
             v = -v
 
     def sample_move(self):
-        pi = {k: 0.0 for k in range(self.nn.game.policy_shape())}
+        pi = {k: 0.0 for k in range(self.game.policy_shape())}
         for s in self.tree.children:
             pi[s.action] = s.n ** (1 / CFG.temp_init)
         if self.temp_it < CFG.temp_thresh:
