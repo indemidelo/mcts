@@ -1,9 +1,18 @@
+import random
+import numpy as np
 from src.train import Training
 from config import CFG
 
 if __name__ == '__main__':
     # Training
     print('Neural Network Training')
+
+    seed = random.choice(range(1000))
+    # seed = 850
+    # print(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+
     if CFG.game == 1:
         from games.tic_tac_toe.TicTacToe import TicTacToe
         game = TicTacToe

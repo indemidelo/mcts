@@ -9,7 +9,29 @@ def play_a_game(board, player_color, move):
     if board.winner:
         return board.winner, board.remaining_moves()
     else:
-        return random_game(board, -player_color)
+        return semi_random_game(board, -player_color)
+
+
+def semi_random_game(board, player_color):
+    while board.playing:
+        lag = board.list_available_moves()
+
+        # Check if there are winning moves
+        for check in lag:
+            board_clone = deepcopy(board)
+            board.play_(player_color, check)
+            if board_clone.winner:
+                return board_clone.winner, board_clone.remaining_moves()
+
+        # Else move random
+        random_move = random.choice(lag)
+        board.play_(player_color, random_move)
+        if board.winner:
+            return board.winner, board.remaining_moves()
+
+        player_color = -player_color
+
+    return 0, 0  # Game ended in a draw
 
 
 def random_game(board, player_color):
@@ -20,6 +42,12 @@ def random_game(board, player_color):
             return board.winner, board.remaining_moves()
         player_color = -player_color
     return 0, 0  # Game ended in a draw
+
+
+def compute_easy_v(scores):
+    # v is the total scores of the most winning player
+    # divided by the absolute sum of all scores
+    pass
 
 
 def compute_v(scores):
@@ -49,15 +77,23 @@ class PureRLAgent(object):
                 new_board = deepcopy(state.board)
                 winner, remaining_moves = play_a_game(new_board, state.player_color, move)
 
-                if winner == state.player_color:
+                # the winner is the playing player (opposite of next player's color)
+                if winner == -state.player_color:
                     scores[move] += remaining_moves
-                elif winner == -state.player_color:
+                # the winner is the opponent (player_color is the player doing the next move)
+                elif winner == state.player_color:
                     scores[move] -= remaining_moves
 
+        # pos_scores = deepcopy(scores)
+        # for j in scores:
+        #     if j < 0:
+        #         pos_scores = [i + abs(j) for i in pos_scores]
+        # p = [j / sum(pos_scores) if sum(pos_scores) else j for j in pos_scores]
+        # v = compute_v(scores) if sum(scores) else 0
+
         pos_scores = deepcopy(scores)
-        for j in scores:
-            if j < 0:
-                pos_scores = [i + abs(j) for i in pos_scores]
-        p = [j / sum(pos_scores) for j in pos_scores]
-        v = compute_v(scores)
+        if min(pos_scores) < 0:
+            pos_scores = [j + abs(min(pos_scores)) for j in pos_scores]
+        p = [j / sum(pos_scores) if sum(pos_scores) else j for j in pos_scores]
+        v = compute_v(scores) if sum(scores) else 0
         return p, v
