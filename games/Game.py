@@ -80,3 +80,14 @@ class Game(object):
         game_matrix = np.array(
             (p1board, p2board, player_matrix))
         return np.array([game_matrix])
+
+    def simpler_boards_repr(self, player=1):
+        """
+        Format a vector of boards in the fully connected layout
+        :param player:
+        :return:
+        """
+        player_matrix = np.zeros((self.rows, self.columns))
+        if player == 1:
+            game_matrix = np.array((self.board, player_matrix))
+        return np.array([game_matrix])
