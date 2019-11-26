@@ -81,7 +81,7 @@ class Game(object):
             (p1board, p2board, player_matrix))
         return np.array([game_matrix])
 
-    def simpler_boards_repr(self, player=1):
+    def simpler_board_repr(self, player=1):
         """
         Format a vector of boards in the fully connected layout
         :param player:
@@ -89,5 +89,5 @@ class Game(object):
         """
         player_matrix = np.zeros((self.rows, self.columns))
         if player == 1:
-            game_matrix = np.array((self.board, player_matrix))
-        return np.array([game_matrix])
+            player_matrix += 1
+        return np.array((self.board, player_matrix))

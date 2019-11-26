@@ -58,11 +58,11 @@ class CFG(object):
     resnet_blocks = 5
     record_loss = 1
     loss_file = "loss.txt"
-    game = 2
+    game = 1
     checkpoint = 1#50
     data_waste = False
     ts_log = round(time.time())
-    framework = 'tensorflow2'
+    framework = 'pytorch_fcc'
     gpu_train = True
-    print_board = True
-    mode = 'pure_rl_test'
+    print_board = False
+    mode = 'nn_train_test'
