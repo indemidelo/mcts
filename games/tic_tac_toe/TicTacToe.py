@@ -8,7 +8,7 @@ class TicTacToe(Game):
 
     @staticmethod
     def input_shape():
-        return [3, 3, 3]
+        return [Game.n_channels(), 3, 3]
 
     @staticmethod
     def policy_shape():

@@ -1,3 +1,4 @@
+from config import CFG
 import numpy as np
 
 
@@ -24,6 +25,10 @@ class Game(object):
         self.plays = 0
         self.winner = None
         self.reward = 0
+
+    @staticmethod
+    def n_channels():
+        return CFG.n_channels_per_board
 
     @staticmethod
     def input_shape():
@@ -64,6 +69,36 @@ class Game(object):
         return p1board, p2board
 
     def board_repr(self, player):
+        """
+        Format the board in a customizable layout.
+            CFG.n_channels_per_board = 1 : Player 1 always vs Player -1
+            CFG.n_channels_per_board = 3 : Board layout and a layer for the
+                                           current player
+            CFG.n_channels_per_board = 3 : AlphaZero layout
+
+        :param player: (int) player id. Can be 1 or -1
+        :return: np.array with board representation
+        """
+        if CFG.n_channels_per_board == 1:
+            return self.essential_board_repr(player)
+        elif CFG.n_channels_per_board == 2:
+            return self.simpler_board_repr(player)
+        else:
+            return self.board_repr_alphazero(player)
+
+    def essential_board_repr(self, player):
+        """
+        One single filter. If player one has to move return the board,
+        otherwise invert the color of all the pieces on the board
+        :param player: (int) player id
+        :return: np.array with board representation
+        """
+        if player == 1:
+            return np.array([self.board])
+        else:
+            return np.array([-self.board])
+
+    def board_repr_alphazero(self, player):
         """
         Format the board in the AlphaZero layout:
         1st layer = Player one

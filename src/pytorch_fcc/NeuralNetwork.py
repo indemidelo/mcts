@@ -18,8 +18,7 @@ def softmax(x):
 class NeuralNetwork(object):
 
     def __init__(self, game, model_name=None):
-        in_ch, h, w = game.input_shape()
-        game_dim = in_ch * h * w
+        game_dim = np.prod(game.input_shape())
         self.loss_fn = torch.nn.MSELoss(reduction='sum')
         self.model = torch.nn.Sequential(
             torch.nn.Flatten(),
