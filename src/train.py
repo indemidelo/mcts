@@ -1,5 +1,6 @@
 import numpy as np
 import time
+from copy import deepcopy
 from datetime import datetime
 from config import CFG
 from importlib import import_module
@@ -41,9 +42,10 @@ class Training:
                 self.update_training_data_(training_data_loop)
                 elapsed = time.time() - start_time
                 mean_el += elapsed / CFG.num_games
-                print(f'Game {g + 1} in iter {i + 1} '
-                      f'won by player {simgame.tree.board.winner}'
-                      f' - elapsed: {round(elapsed, 2)}s')
+                if (g + 1) % 10 == 0:
+                    print(f'Game {g + 1} in iter {i + 1} '
+                          f'won by player {simgame.tree.board.winner}'
+                          f' - elapsed: {round(elapsed, 2)}s')
             print(f'Mean elapsed time for one iteration = {round(mean_el, 2)}')
 
             print('Data used for training: ', len(self.train_data['state']))
@@ -52,11 +54,11 @@ class Training:
 
             self.init_train_data()
 
-            # elif (i + 1) % CFG.checkpoint == 0:
-            #     filename = f'{CFG.model_directory}prova_{date}_iter_{i + 1}.ckpt'
-            #     self.eval_networks_()
-            #     self.net.save_model(filename)
-            #     self.net.load_model(filename)
+            if CFG.improve_networks and (i + 1) % CFG.checkpoint == 0:
+                filename = f'{CFG.model_directory}prova_{date}_iter_{i + 1}.pt'
+                self.eval_networks_()
+                self.net.save_model(filename)
+                self.net.load_model(filename)
 
     def eval_networks_(self):
         print('Networks evaluation')
@@ -79,21 +81,22 @@ class Training:
                   f' network age={self.net.age}')
             ai_new.logger.log_v('stronger', 'network trained')
             ai_new.logger.log_pi('stronger', 'network trained')
-            self.net.save_model(f'{CFG.model_directory}old/old_nn')
-            self.eval_net.load_model(f'{CFG.model_directory}old/old_nn')
+            self.net.save_model(f'{CFG.model_directory}old/old_nn.pt')
+            self.eval_net.load_model(f'{CFG.model_directory}old/old_nn.pt')
             self.init_train_data()
         elif num_eval_games:
             print(f'Weaker network trained :( WR='
                   f'{round(wins / num_eval_games, 2)}'
                   f' network age={self.net.age}')
-            self.net.load_model(f'{CFG.model_directory}old/old_nn')
+            # self.net.load_model(f'{CFG.model_directory}old/old_nn.pt')
+            self.net = deepcopy(self.eval_net)
             if CFG.data_waste:
                 self.init_train_data()
         else:
             print('All draws! Force update :/'
                   f' network age={self.net.age}')
-            self.net.save_model(f'{CFG.model_directory}old/old_nn')
-            self.eval_net.load_model(f'{CFG.model_directory}old/old_nn')
+            self.net.save_model(f'{CFG.model_directory}old/old_nn.pt')
+            self.eval_net.load_model(f'{CFG.model_directory}old/old_nn.pt')
             self.init_train_data()
 
     def test(self, model_filename=None):

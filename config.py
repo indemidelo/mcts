@@ -66,3 +66,4 @@ class CFG(object):
     gpu_train = True
     print_board = False
     mode = 'nn_train_test'
+    improve_networks = False

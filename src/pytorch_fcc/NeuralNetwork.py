@@ -27,8 +27,8 @@ class NeuralNetwork(object):
             torch.nn.ReLU(),
             torch.nn.Linear(game_dim * 2, game_dim * 4),
             torch.nn.ReLU(),
-            torch.nn.Linear(game_dim * 4, game_dim * 4),
-            torch.nn.ReLU(),
+            # torch.nn.Linear(game_dim * 4, game_dim * 4),
+            # torch.nn.ReLU(),
             torch.nn.Linear(game_dim * 4, 1))
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=CFG.learning_rate)
         self.game = game
@@ -89,17 +89,18 @@ class NeuralNetwork(object):
 
                 j += 1
 
-            print(f"Epoch: {epoch + 1} - loss mean = {loss_mean}")  # \n")
-            # f"loss policy mean = {loss_policy_mean}\n"
-            # f"loss value mean = {loss_value_mean}")
+            if (epoch + 1) % 5 == 0:
+                print(f"Epoch: {epoch + 1} - loss mean = {loss_mean}")  # \n")
+                # f"loss policy mean = {loss_policy_mean}\n"
+                # f"loss value mean = {loss_value_mean}")
 
     def save_model(self, filename):
         print("Saving model:", filename, "at", CFG.model_directory)
-        # self.saver.save(self.sess, filename)
+        torch.save(self.model.state_dict(), filename)
 
     def load_model(self, filename):
         print("Loading model:", filename, "from", CFG.model_directory)
-        # self.saver.restore(self.sess, filename)
+        self.model.load_state_dict(torch.load(filename))
 
 
 def to_tensor(*args):
