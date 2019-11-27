@@ -67,3 +67,4 @@ class CFG(object):
     print_board = False
     mode = 'nn_train_test'
     improve_networks = False
+    n_channels_per_board = 1
