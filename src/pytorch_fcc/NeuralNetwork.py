@@ -54,8 +54,11 @@ class NeuralNetwork(object):
         # input = input.to(device_gpu)
         input = torch.tensor(boards_to_eval).double().to(device_gpu)
         # output = self.flatten(self.model(input))
-        output = self.model(input)
-        output = output.view(output.shape[0])
+        with torch.no_grad():
+            self.model.eval()
+            output = self.model(input)
+            output = output.view(output.shape[0])
+
         if CFG.gpu_train:
             output = output.detach().cpu().numpy()
         v = output[0]
